@@ -24,6 +24,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  overscroll-behavior-y: none;
 }
 
 /* --- BASIC RESET & TYPOGRAPHY --- */
@@ -45,7 +46,15 @@ body {
   background: var(--bg-gradient);
   color: var(--text-primary);
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overflow-y: auto !important;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom Sleek Scrollbar */
@@ -315,6 +324,40 @@ body {
   padding: 5px 12px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 🔝 Topbar Mode & Action Buttons (رحلة عبدالله Style) */
+.btn-topbar-mode {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.btn-desktop-toggle {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: var(--accent-cyan);
+}
+.btn-desktop-toggle:hover {
+  background: rgba(14, 165, 233, 0.25);
+}
+
+.btn-sandbox-toggle {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+}
+.btn-sandbox-toggle:hover {
+  background: rgba(245, 158, 11, 0.28);
 }
 
 /* --- TAB PAGES --- */
@@ -1011,35 +1054,37 @@ tr.batch-hover-highlight > td {
 }
 
 
-/* --- RESPONSIVENESS & DESKTOP MODE FOR MOBILE --- */
-body.force-desktop-mode {
-  overflow-x: auto !important;
-}
-
+/* ==============================================================================
+   💻 Explicit Desktop Force Mode Override (When user chooses Desktop view on PC)
+   ============================================================================== */
 body.force-desktop-mode .app-container {
-  min-width: 1100px !important;
-  grid-template-columns: 260px 1fr !important;
+  min-width: 1200px !important;
 }
 
 body.force-desktop-mode .sidebar {
   position: sticky !important;
   top: 0 !important;
-  width: 260px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 270px !important;
+  min-width: 270px !important;
+  max-width: 270px !important;
   height: 100vh !important;
-  display: flex !important;
-  right: 0 !important;
+  transform: none !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
+  display: flex !important;
 }
 
 body.force-desktop-mode .mobile-menu-btn,
-body.force-desktop-mode .mobile-menu-close-btn {
+body.force-desktop-mode .mobile-menu-close-btn,
+body.force-desktop-mode .sidebar-overlay {
   display: none !important;
 }
 
 body.force-desktop-mode .main-content {
+  flex: 1 !important;
+  min-width: 0 !important;
   overflow-x: auto !important;
-  min-width: 840px !important;
 }
 
 @media (max-width: 820px) {
@@ -1094,30 +1139,47 @@ body.force-desktop-mode .main-content {
     opacity: 1 !important;
   }
 
-  /* Mobile Top Bar Controls */
+  /* Mobile Top Bar Controls - Exact رحلة عبدالله Tactics */
   .top-bar {
-    padding: 12px 15px;
+    padding: 0 14px;
+    height: 54px;
+    min-height: 54px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: rgba(17, 24, 39, 0.4);
+    justify-content: space-between;
+    gap: 8px;
+    background: rgba(17, 24, 39, 0.6);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .mobile-menu-btn {
     display: flex !important;
+    padding: 6px 10px;
   }
 
   .digital-clock-widget {
-    margin-right: auto;
-    margin-left: 0 !important;
-    font-size: 0.9rem;
-    padding: 4px 12px !important;
+    display: none !important;
+  }
+
+  .status-indicator {
+    display: none !important;
   }
 
   .user-profile {
-    margin-left: 0;
-    margin-right: auto;
+    display: none !important;
+  }
+
+  .btn-topbar-mode {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    border-radius: 8px;
+  }
+  .btn-topbar-mode span.btn-text {
+    display: none !important;
   }
 
   .main-content {

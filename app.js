@@ -107,15 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start glowing digital clock
   startDigitalClock();
 
-  // 📱 Auto-Expand and Authenticate when running inside Telegram Mini App
-  if (window.Telegram && window.Telegram.WebApp) {
+  // 📱 Telegram Mini App Setup (Exact tactics from رحلة عبدالله)
+  if (window.Telegram?.WebApp) {
+    const twa = window.Telegram.WebApp;
     try {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-        try { window.Telegram.WebApp.requestFullscreen(); } catch (fsErr) {}
+      twa.ready();
+      twa.expand();
+      // 🛡️ Prevent pull-to-dismiss scroll gesture on mobile (Official Telegram SDK API)
+      if (typeof twa.disableVerticalSwipes === 'function') {
+        twa.disableVerticalSwipes();
       }
-      if (window.Telegram.WebApp.initData) {
+      if (twa.initData) {
         safeSetItem('futureair_session', 'authenticated');
       }
     } catch (tgErr) {
@@ -560,6 +562,12 @@ function updateQuickStats() {
 // --- TAB ROUTING SYSTEM ---
 async function switchTab(tabId) {
   if (!tabId) tabId = 'overview-tab';
+
+  // Haptic feedback & scroll to top (tactics from رحلة عبدالله)
+  if (window.Telegram?.WebApp?.HapticFeedback) {
+    try { window.Telegram.WebApp.HapticFeedback.selectionChanged(); } catch (e) {}
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // Hide all tab pages
   document.querySelectorAll('.tab-page').forEach(page => page.classList.remove('active'));
@@ -9162,59 +9170,77 @@ window.setInventoryLogDateOffset = setInventoryLogDateOffset;
 window.showAllInventoryLogDays = showAllInventoryLogDays;
 window.switchInventorySubTab = switchInventorySubTab;
 
-// --- TOGGLE DESKTOP MODE ON MOBILE ---
+// 💻 Desktop / Mobile View Mode Toggle (Exact tactics from رحلة عبدالله)
 function toggleDesktopMode() {
+  // Detect if user is on mobile
+  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+                         window.Telegram?.WebApp?.platform === 'android' || 
+                         window.Telegram?.WebApp?.platform === 'ios';
+  
+  if (isMobileDevice) {
+    // Do nothing when clicked from mobile as in رحلة عبدالله
+    return;
+  }
+
+  // On Laptop / Desktop (Telegram Desktop or Browser):
+  // 1. Expand Telegram WebApp window to full screen
+  try {
+    if (window.Telegram?.WebApp) {
+      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+        window.Telegram.WebApp.requestFullscreen();
+      }
+      if (typeof window.Telegram.WebApp.expand === 'function') {
+        window.Telegram.WebApp.expand();
+      }
+    }
+  } catch (e) {}
+
+  // 2. Toggle Desktop Layout mode
   const isDesktop = document.body.classList.toggle('force-desktop-mode');
-  localStorage.setItem('force_desktop_mode', isDesktop ? 'true' : 'false');
-  updateDesktopModeBtn();
+  const btnText = document.getElementById('desktop-mode-text');
+  const btnIcon = document.getElementById('desktop-mode-icon');
+  const viewportMeta = document.querySelector('meta[name="viewport"]');
+
+  if (isDesktop) {
+    if (btnText) btnText.textContent = 'وضع الموبايل';
+    if (btnIcon) btnIcon.textContent = '📱';
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
+    localStorage.setItem('force_desktop_mode', 'true');
+  } else {
+    if (btnText) btnText.textContent = 'وضع الكمبيوتر';
+    if (btnIcon) btnIcon.textContent = '💻';
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+    localStorage.removeItem('force_desktop_mode');
+  }
 }
 window.toggleDesktopMode = toggleDesktopMode;
 
-function updateDesktopModeBtn() {
-  const btn = document.getElementById('toggle-desktop-mode-btn');
-  const isDesktop = document.body.classList.contains('force-desktop-mode');
-  if (btn) {
-    btn.innerHTML = isDesktop ? '📱 العودة للموبايل' : '💻 عرض الكمبيوتر';
-    btn.style.background = isDesktop ? 'rgba(16, 185, 129, 0.15)' : 'rgba(14, 165, 233, 0.12)';
-    btn.style.borderColor = isDesktop ? 'rgba(16, 185, 129, 0.4)' : 'rgba(14, 165, 233, 0.3)';
-    btn.style.color = isDesktop ? 'var(--success)' : 'var(--accent-cyan)';
+// 🛡️ Prevent Pull-to-Dismiss Gesture & Window Overscroll on Mobile (Exact رحلة عبدالله Tactic)
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  if (e.touches && e.touches.length === 1) {
+    touchStartY = e.touches[0].clientY;
   }
-}
-window.updateDesktopModeBtn = updateDesktopModeBtn;
+}, { passive: true });
 
-// --- OPEN FULLSCREEN OR IN EXTERNAL BROWSER ---
-function openFullscreenOrBrowser() {
-  // 1. If running inside Telegram Mini App
-  if (window.Telegram && window.Telegram.WebApp) {
-    if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-      try { window.Telegram.WebApp.requestFullscreen(); } catch (e) {}
-    }
-    if (typeof window.Telegram.WebApp.expand === 'function') {
-      try { window.Telegram.WebApp.expand(); } catch (e) {}
-    }
-    // Launch default browser (Chrome / Edge) on PC/Mobile in full desktop window
-    if (typeof window.Telegram.WebApp.openLink === 'function') {
-      window.Telegram.WebApp.openLink('https://futureairpro.onrender.com/');
-      return;
-    }
-  }
-
-  // 2. Regular desktop browser fullscreen toggle
-  if (!document.fullscreenElement) {
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {
-        window.open('https://futureairpro.onrender.com/', '_blank');
-      });
-    } else {
-      window.open('https://futureairpro.onrender.com/', '_blank');
-    }
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen().catch(() => {});
+document.addEventListener('touchmove', (e) => {
+  if (!e.touches || e.touches.length !== 1) return;
+  const touchY = e.touches[0].clientY;
+  const touchDiff = touchY - touchStartY;
+  
+  // When swiping DOWN at the very top of scroll, prevent dragging down the mini app
+  if (touchDiff > 0) {
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    const activeScrollable = e.target.closest('.main-content, .card-body, .modal-content, .tab-content, .sidebar');
+    const containerScrollTop = activeScrollable ? activeScrollable.scrollTop : 0;
+    
+    if (scrollY <= 0 && containerScrollTop <= 0) {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
     }
   }
-}
-window.openFullscreenOrBrowser = openFullscreenOrBrowser;
+}, { passive: false });
 
 // --- UNIFIED BATCH ROW HOVER HIGHLIGHT ---
 document.addEventListener('mouseover', (e) => {
@@ -9247,16 +9273,24 @@ document.addEventListener('mouseout', (e) => {
   }
 });
 
-// Restore saved desktop mode preference on page load
+// Restore saved desktop mode preference on page load (exact رحلة عبدالله tactic)
 document.addEventListener('DOMContentLoaded', () => {
-  // On screens narrower than 820px, default to mobile drawer mode so it never squishes!
-  if (window.innerWidth < 820) {
+  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+                         window.Telegram?.WebApp?.platform === 'android' || 
+                         window.Telegram?.WebApp?.platform === 'ios';
+
+  if (isMobileDevice) {
     document.body.classList.remove('force-desktop-mode');
     localStorage.removeItem('force_desktop_mode');
   } else if (localStorage.getItem('force_desktop_mode') === 'true') {
     document.body.classList.add('force-desktop-mode');
+    const btnText = document.getElementById('desktop-mode-text');
+    const btnIcon = document.getElementById('desktop-mode-icon');
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (btnText) btnText.textContent = 'وضع الموبايل';
+    if (btnIcon) btnIcon.textContent = '📱';
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
   }
-  updateDesktopModeBtn();
 });
 
 window.showAllCashflowDays = showAllCashflowDays;

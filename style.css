@@ -1012,14 +1012,20 @@ tr.batch-hover-highlight > td {
 
 
 /* --- RESPONSIVENESS & DESKTOP MODE FOR MOBILE --- */
+body.force-desktop-mode {
+  overflow-x: auto !important;
+}
+
 body.force-desktop-mode .app-container {
+  min-width: 1100px !important;
   grid-template-columns: 260px 1fr !important;
 }
 
 body.force-desktop-mode .sidebar {
-  position: static !important;
+  position: sticky !important;
+  top: 0 !important;
   width: 260px !important;
-  height: auto !important;
+  height: 100vh !important;
   display: flex !important;
   right: 0 !important;
   box-shadow: none !important;
@@ -1033,36 +1039,38 @@ body.force-desktop-mode .mobile-menu-close-btn {
 
 body.force-desktop-mode .main-content {
   overflow-x: auto !important;
-  min-width: 980px !important;
+  min-width: 840px !important;
 }
 
 @media (max-width: 820px) {
-  .app-container:not(.force-desktop-mode) {
-    grid-template-columns: 1fr;
+  body:not(.force-desktop-mode) .app-container {
+    grid-template-columns: 1fr !important;
     position: relative;
+    width: 100% !important;
   }
 
   /* Mobile Slide-out Sidebar Drawer */
-  .sidebar {
+  body:not(.force-desktop-mode) .sidebar {
     display: flex !important;
-    position: fixed;
+    position: fixed !important;
     top: 0;
-    right: -280px; /* Hidden offscreen */
-    width: 280px;
-    height: 100vh;
-    z-index: 1000;
-    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-    background: rgba(17, 24, 39, 0.95);
-    backdrop-filter: blur(20px);
-    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    right: -300px !important; /* Hidden offscreen */
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5) !important;
+    background: rgba(17, 24, 39, 0.98) !important;
+    backdrop-filter: blur(25px) !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 
-  .sidebar.open {
-    right: 0; /* Slide-in */
+  body:not(.force-desktop-mode) .sidebar.open {
+    right: 0 !important; /* Slide-in */
   }
 
-  .mobile-menu-close-btn {
+  body:not(.force-desktop-mode) .mobile-menu-close-btn {
     display: block !important;
   }
 
@@ -1082,8 +1090,8 @@ body.force-desktop-mode .main-content {
   }
 
   .sidebar-overlay.show {
-    display: block;
-    opacity: 1;
+    display: block !important;
+    opacity: 1 !important;
   }
 
   /* Mobile Top Bar Controls */
@@ -1181,6 +1189,22 @@ body.force-desktop-mode .main-content {
   .user-profile {
     margin-right: auto;
     margin-left: 0;
+  }
+}
+
+@media (max-width: 500px) {
+  .user-role {
+    display: none !important;
+  }
+  .status-indicator span:last-child {
+    display: none !important;
+  }
+  .page-title h2 {
+    font-size: 16px !important;
+  }
+  .top-bar {
+    gap: 6px !important;
+    padding: 8px 10px !important;
   }
 }
 

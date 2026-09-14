@@ -44,7 +44,7 @@
   <!-- Boxicons CDN for modern premium icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.25.0">
+  <link rel="stylesheet" href="style.css?v=2.26.0">
   <!-- Telegram WebApp SDK for Native Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Supabase JS Client CDN -->
@@ -84,7 +84,7 @@
           <span>Future Air ERP</span>
         </div>
         <!-- Close button for mobile drawer -->
-        <button id="mobile-menu-close" class="mobile-menu-close-btn" onclick="toggleMobileSidebar(false)" style="display: none; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.6rem; cursor: pointer; padding: 0; line-height: 1; margin-right: auto; margin-left: 0;">&times;</button>
+        <button id="mobile-menu-close" class="mobile-menu-close-btn" onclick="toggleMobileSidebar(false)" style="background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.6rem; cursor: pointer; padding: 0; line-height: 1; margin-right: auto; margin-left: 0;">&times;</button>
       </div>
       
       <nav class="sidebar-menu">
@@ -146,7 +146,7 @@
       <!-- 🌐 TOP BAR -->
       <header class="top-bar">
         <!-- Hamburger Menu Button for Mobile -->
-        <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" style="display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1.5rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; align-items: center; justify-content: center; margin-left: 10px;">
+        <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1.5rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; align-items: center; justify-content: center; margin-left: 10px;">
           <i class='bx bx-menu'></i>
         </button>
 
@@ -163,11 +163,17 @@
           <span id="digital-date" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">--/--/----</span>
         </div>
 
-        <button type="button" id="toggle-desktop-mode-btn" onclick="toggleDesktopMode()" style="padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 16px; background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.3); color: var(--accent-cyan); display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 10px;" title="التبديل بين وضع الموبايل ووضع الكمبيوتر">
-          💻 وضع الكمبيوتر
+        <!-- Fullscreen / Open in Browser Button -->
+        <button type="button" id="fullscreen-btn" onclick="openFullscreenOrBrowser()" style="padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 16px; background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.35); color: var(--accent-cyan); display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 8px; white-space: nowrap;" title="فتح في المتصفح بكامل الشاشة للكمبيوتر">
+          <i class='bx bx-fullscreen'></i>
+          <span>ملء الشاشة</span>
         </button>
 
-        <button type="button" id="toggle-sandbox-btn" onclick="toggleSandboxModeFromWeb()" style="padding: 5px 14px; font-size: 0.82rem; font-weight: 700; border-radius: 16px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 10px; transition: all 0.3s ease;" title="تفعيل أو تجميد وضع التجربة والاختبار للبوت">
+        <button type="button" id="toggle-desktop-mode-btn" onclick="toggleDesktopMode()" style="padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 16px; background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.3); color: var(--accent-cyan); display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 8px; white-space: nowrap;" title="التبديل بين وضع الموبايل وعرض الكمبيوتر">
+          💻 عرض الكمبيوتر
+        </button>
+
+        <button type="button" id="toggle-sandbox-btn" onclick="toggleSandboxModeFromWeb()" style="padding: 5px 14px; font-size: 0.82rem; font-weight: 700; border-radius: 16px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 10px; transition: all 0.3s ease; white-space: nowrap;" title="تفعيل أو تجميد وضع التجربة والاختبار للبوت">
           🧪 تجربة البوت
         </button>
 
@@ -3173,6 +3179,6 @@
   <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
   <!-- JS Controller -->
   <script src="config.js"></script>
-  <script src="app.js?v=2.67.0"></script>
+  <script src="app.js?v=2.68.0"></script>
 </body>
 </html>

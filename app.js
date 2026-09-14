@@ -112,6 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
+      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+        try { window.Telegram.WebApp.requestFullscreen(); } catch (fsErr) {}
+      }
       if (window.Telegram.WebApp.initData) {
         safeSetItem('futureair_session', 'authenticated');
       }
@@ -9171,13 +9174,47 @@ function updateDesktopModeBtn() {
   const btn = document.getElementById('toggle-desktop-mode-btn');
   const isDesktop = document.body.classList.contains('force-desktop-mode');
   if (btn) {
-    btn.innerHTML = isDesktop ? '📱 وضع الموبايل' : '💻 وضع الكمبيوتر';
+    btn.innerHTML = isDesktop ? '📱 العودة للموبايل' : '💻 عرض الكمبيوتر';
     btn.style.background = isDesktop ? 'rgba(16, 185, 129, 0.15)' : 'rgba(14, 165, 233, 0.12)';
     btn.style.borderColor = isDesktop ? 'rgba(16, 185, 129, 0.4)' : 'rgba(14, 165, 233, 0.3)';
     btn.style.color = isDesktop ? 'var(--success)' : 'var(--accent-cyan)';
   }
 }
 window.updateDesktopModeBtn = updateDesktopModeBtn;
+
+// --- OPEN FULLSCREEN OR IN EXTERNAL BROWSER ---
+function openFullscreenOrBrowser() {
+  // 1. If running inside Telegram Mini App
+  if (window.Telegram && window.Telegram.WebApp) {
+    if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+      try { window.Telegram.WebApp.requestFullscreen(); } catch (e) {}
+    }
+    if (typeof window.Telegram.WebApp.expand === 'function') {
+      try { window.Telegram.WebApp.expand(); } catch (e) {}
+    }
+    // Launch default browser (Chrome / Edge) on PC/Mobile in full desktop window
+    if (typeof window.Telegram.WebApp.openLink === 'function') {
+      window.Telegram.WebApp.openLink('https://futureairpro.onrender.com/');
+      return;
+    }
+  }
+
+  // 2. Regular desktop browser fullscreen toggle
+  if (!document.fullscreenElement) {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(() => {
+        window.open('https://futureairpro.onrender.com/', '_blank');
+      });
+    } else {
+      window.open('https://futureairpro.onrender.com/', '_blank');
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+}
+window.openFullscreenOrBrowser = openFullscreenOrBrowser;
 
 // --- UNIFIED BATCH ROW HOVER HIGHLIGHT ---
 document.addEventListener('mouseover', (e) => {
@@ -9212,7 +9249,11 @@ document.addEventListener('mouseout', (e) => {
 
 // Restore saved desktop mode preference on page load
 document.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('force_desktop_mode') === 'true') {
+  // On screens narrower than 820px, default to mobile drawer mode so it never squishes!
+  if (window.innerWidth < 820) {
+    document.body.classList.remove('force-desktop-mode');
+    localStorage.removeItem('force_desktop_mode');
+  } else if (localStorage.getItem('force_desktop_mode') === 'true') {
     document.body.classList.add('force-desktop-mode');
   }
   updateDesktopModeBtn();

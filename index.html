@@ -1,0 +1,3178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Future Air ERP | لوحة تحكم فيوتشر إير</title>
+  <!-- Global JS Error Visualizer for Debugging -->
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      setTimeout(function() {
+        var errBox = document.getElementById('debug-error-box');
+        if (!errBox) {
+          errBox = document.createElement('div');
+          errBox.id = 'debug-error-box';
+          errBox.style.position = 'fixed';
+          errBox.style.bottom = '20px';
+          errBox.style.left = '20px';
+          errBox.style.right = '20px';
+          errBox.style.background = 'rgba(220, 38, 38, 0.95)';
+          errBox.style.color = '#fff';
+          errBox.style.padding = '20px';
+          errBox.style.borderRadius = '10px';
+          errBox.style.fontFamily = 'monospace';
+          errBox.style.fontSize = '14px';
+          errBox.style.zIndex = '999999';
+          errBox.style.direction = 'ltr';
+          errBox.style.textAlign = 'left';
+          errBox.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+          errBox.style.border = '2px solid #ef4444';
+          document.body.appendChild(errBox);
+        }
+        errBox.innerHTML = '<h3>⚠️ JavaScript Error Detected:</h3>' +
+                           '<p><strong>Message:</strong> ' + message + '</p>' +
+                           '<p><strong>Source:</strong> ' + source.split('/').pop() + ' (Line ' + lineno + ', Col ' + colno + ')</p>' +
+                           '<p style="margin-top:10px; font-size:12px; color:#fca5a5;">يرجى تصوير هذه الشاشة وإرسالها لي لحل المشكلة فوراً.</p>';
+      }, 100);
+      return false;
+    };
+  </script>
+  <!-- Google Fonts - Tajawal -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Boxicons CDN for modern premium icons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css?v=2.25.0">
+  <!-- Telegram WebApp SDK for Native Mini App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- 🔒 PASSCODE GATE SCREEN -->
+  <div id="passcode-gate" class="passcode-gate">
+    <div class="passcode-card">
+      <div class="lock-icon">
+        <i class='bx bxs-lock-open-alt'></i>
+      </div>
+      <h2>نظام إدارة فيوتشر إير</h2>
+      <p>يرجى إدخال الرقم السري للوصول للوحة التحكم:</p>
+      <div class="passcode-input-container">
+        <input type="password" id="passcode-input" placeholder="••••" maxlength="4" autofocus>
+        <button id="submit-passcode" class="btn btn-primary">دخول</button>
+      </div>
+      <div id="passcode-error" class="error-msg">❌ الرقم السري غير صحيح!</div>
+    </div>
+  </div>
+
+  <!-- 🏢 MAIN APP CONTAINER -->
+  <div id="app-container" class="app-container hidden">
+    
+    <!-- 🎛️ SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">
+          <i class='bx bx-wind'></i>
+        </div>
+        <div class="logo-text">
+          <h1>فيوتشر إير</h1>
+          <span>Future Air ERP</span>
+        </div>
+        <!-- Close button for mobile drawer -->
+        <button id="mobile-menu-close" class="mobile-menu-close-btn" onclick="toggleMobileSidebar(false)" style="display: none; background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.6rem; cursor: pointer; padding: 0; line-height: 1; margin-right: auto; margin-left: 0;">&times;</button>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <ul>
+          <li class="menu-item active" data-target="overview-tab">
+            <i class='bx bxs-dashboard'></i>
+            <span>لوحة المؤشرات</span>
+          </li>
+          <li class="menu-item" data-target="inventory-tab">
+            <i class='bx bx-cabinet'></i>
+            <span>المخزن والأجهزة</span>
+          </li>
+          <li class="menu-item" data-target="suppliers-tab">
+            <i class='bx bxs-truck'></i>
+            <span>حسابات الموردين</span>
+          </li>
+          <li class="menu-item" data-target="customers-tab">
+            <i class='bx bxs-user-detail'></i>
+            <span>العملاء</span>
+          </li>
+          <li class="menu-item" data-target="workorders-tab">
+            <i class='bx bx-wrench'></i>
+            <span>أوامر الشغل والصيانات</span>
+          </li>
+          <li class="menu-item" data-target="cashflow-tab">
+            <i class='bx bx-wallet'></i>
+            <span>الخزنة واليومية</span>
+          </li>
+          <li class="menu-item" data-target="hr-tab">
+            <i class='bx bxs-group'></i>
+            <span>حضور الموظفين والرواتب</span>
+          </li>
+          <li class="menu-item" data-target="contracts-tab">
+            <i class='bx bx-images'></i>
+            <span>أرشيف العقود</span>
+          </li>
+          <li class="menu-item" data-target="financial-tab">
+            <i class='bx bx-line-chart'></i>
+            <span>المركز المالي والحسابات</span>
+          </li>
+          <li class="menu-item" data-target="profits-tab">
+            <i class='bx bx-pie-chart-alt-2'></i>
+            <span>حساب الأرباح والخسائر</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="logout-btn" class="btn btn-logout">
+          <i class='bx bx-log-out'></i>
+          <span>خروج</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 📄 MAIN CONTENT -->
+    <main class="main-content">
+      
+      <!-- 🌐 TOP BAR -->
+      <header class="top-bar">
+        <!-- Hamburger Menu Button for Mobile -->
+        <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" style="display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1.5rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; align-items: center; justify-content: center; margin-left: 10px;">
+          <i class='bx bx-menu'></i>
+        </button>
+
+        <div class="page-title">
+          <h2 id="current-tab-title">لوحة المؤشرات</h2>
+        </div>
+        
+        <!-- Beautiful Glowing Digital Clock and Date -->
+        <div class="digital-clock-widget" style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 6px 16px; border-radius: 20px; backdrop-filter: blur(10px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-left: auto; margin-right: 15px; direction: rtl;">
+          <i class='bx bx-time-five' style="font-size: 1.1rem; color: var(--accent); animation: pulse 2s infinite;"></i>
+          <span id="digital-clock" style="font-family: monospace; font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: 0.5px;">--:--:-- --</span>
+          <span style="height: 12px; width: 1px; background: rgba(255,255,255,0.15);"></span>
+          <i class='bx bx-calendar' style="font-size: 1.1rem; color: var(--accent);"></i>
+          <span id="digital-date" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">--/--/----</span>
+        </div>
+
+        <button type="button" id="toggle-desktop-mode-btn" onclick="toggleDesktopMode()" style="padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 16px; background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.3); color: var(--accent-cyan); display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 10px;" title="التبديل بين وضع الموبايل ووضع الكمبيوتر">
+          💻 وضع الكمبيوتر
+        </button>
+
+        <button type="button" id="toggle-sandbox-btn" onclick="toggleSandboxModeFromWeb()" style="padding: 5px 14px; font-size: 0.82rem; font-weight: 700; border-radius: 16px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f59e0b; display: flex; align-items: center; gap: 5px; cursor: pointer; margin-left: 10px; transition: all 0.3s ease;" title="تفعيل أو تجميد وضع التجربة والاختبار للبوت">
+          🧪 تجربة البوت
+        </button>
+
+        <div class="user-profile">
+          <div class="status-indicator">
+            <span class="pulse-dot"></span>
+            <span>مزامنة مباشرة مع البوت</span>
+          </div>
+          <span class="user-role">المدير العام</span>
+        </div>
+      </header>
+
+      <!-- 🧪 SANDBOX TEST MODE BANNER BAR -->
+      <div id="sandbox-mode-banner" style="display: none; background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2)); border: 2px dashed #f59e0b; padding: 12px 20px; border-radius: 12px; margin: 15px 25px 0 25px; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); direction: rtl; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.8rem;">🧪</span>
+          <div>
+            <h4 style="margin: 0; color: #fbbf24; font-size: 1.05rem; font-weight: 800;">وضع تجربة واختبار البوت مفّعل حالياً! (Sandbox Mode)</h4>
+            <p style="margin: 3px 0 0; color: #fde68a; font-size: 0.85rem;">تم أخذ لقطة حفظ احتياطية كاملة قبل بدء التجربة.. يمكنك افتعال أي حركات وتعديلات، ولاستعادة كل شيء كما كان اضغط الزر الأحمر باليسار.</p>
+          </div>
+        </div>
+        <button type="button" onclick="disableSandboxModeAndRestore()" class="btn" style="background: var(--danger-color); color: #fff; border: none; font-weight: 700; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);">
+          🔴 إنهاء التجربة واستعادة البيانات الأصلية
+        </button>
+      </div>
+
+      <!-- 📊 TAB PAGES -->
+      <div class="tab-content">
+        
+        <!-- 1. OVERVIEW TAB -->
+        <section id="overview-tab" class="tab-page active">
+          <!-- Quick Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon income">
+                <i class='bx bx-money-withdraw'></i>
+              </div>
+              <div class="stat-details">
+                <h3>الخزنة (الكاش)</h3>
+                <p id="stat-safe-cash">0 ج.م</p>
+              </div>
+              <button type="button" class="stat-toggle-btn" onclick="toggleStatCard('stat-safe-cash')">
+                <i class='bx bx-hide'></i>
+              </button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon income" style="background: rgba(14, 165, 233, 0.15); color: var(--accent-cyan);">
+                <i class='bx bx-credit-card'></i>
+              </div>
+              <div class="stat-details">
+                <h3>السيولة الإلكترونية</h3>
+                <p id="stat-digital-cash">0 ج.م</p>
+              </div>
+              <button type="button" class="stat-toggle-btn" onclick="toggleStatCard('stat-digital-cash')">
+                <i class='bx bx-hide'></i>
+              </button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon stock">
+                <i class='bx bx-cube-alt'></i>
+              </div>
+              <div class="stat-details">
+                <h3>أجهزة متاحة بالمخزن</h3>
+                <p id="stat-available-stock">0 جهاز</p>
+              </div>
+              <button type="button" class="stat-toggle-btn" onclick="toggleStatCard('stat-available-stock')">
+                <i class='bx bx-hide'></i>
+              </button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon debt-supplier">
+                <i class='bx bx-trending-down'></i>
+              </div>
+              <div class="stat-details">
+                <h3>ديون مستحقة للموردين</h3>
+                <p id="stat-supplier-debts">0 ج.م</p>
+              </div>
+              <button type="button" class="stat-toggle-btn" onclick="toggleStatCard('stat-supplier-debts')">
+                <i class='bx bx-hide'></i>
+              </button>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon debt-customer">
+                <i class='bx bx-trending-up'></i>
+              </div>
+              <div class="stat-details">
+                <h3>مستحقات وأقساط العملاء</h3>
+                <p id="stat-customer-receivables">0 ج.م</p>
+              </div>
+              <button type="button" class="stat-toggle-btn" onclick="toggleStatCard('stat-customer-receivables')">
+                <i class='bx bx-hide'></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Charts and Recent Activity -->
+          <div class="dashboard-grid">
+            <div class="card list-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <h3 style="margin: 0; font-size: 1.05rem;">🔔 سجل النشاطات والعمليات الأخيرة</h3>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 0.85rem; color: var(--text-secondary);">تاريخ النشاط:</span>
+                  
+                  <div style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);">
+                    <button type="button" class="btn btn-secondary" onclick="adjustActivitiesDate(-1)" style="padding: 2px 5px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);" title="اليوم السابق">
+                      <i class='bx bx-chevron-right' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                    </button>
+                    <span id="activities-date-text" style="font-weight: 700; color: #38bdf8; font-size: 0.85rem; min-width: 100px; text-align: center; display: inline-block;">🌐 كل الأيام</span>
+                    <button type="button" class="btn btn-secondary" onclick="adjustActivitiesDate(1)" style="padding: 2px 5px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);" title="اليوم التالي">
+                      <i class='bx bx-chevron-left' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                    </button>
+                  </div>
+                  
+                  <input type="date" id="activities-date-filter" onchange="renderOverviewTab()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 5px 8px; font-size: 0.85rem; width: 140px;">
+                  
+                  <button type="button" id="activities-btn-all" class="btn btn-secondary" onclick="showAllActivitiesDays()" style="padding: 5px 10px; font-size: 0.82rem; font-weight: 700; background: #0284c7; border: 1px solid #38bdf8; border-radius: 6px; color: #ffffff; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);">🌐 كل الأيام</button>
+                  <button type="button" id="activities-btn-today" class="btn btn-secondary" onclick="setActivitiesDateOffset(0)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">اليوم</button>
+                  <button type="button" id="activities-btn-yesterday" class="btn btn-secondary" onclick="setActivitiesDateOffset(-1)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">الأمس</button>
+                  <button type="button" id="activities-btn-daybefore" class="btn btn-secondary" onclick="setActivitiesDateOffset(-2)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">قبل أمس</button>
+                  
+                  <button class="btn btn-secondary" onclick="openAllActivitiesModal()" style="padding: 6px 12px; font-size: 0.85rem; font-weight: 600; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">📋 عرض بالكامل</button>
+                </div>
+              </div>
+              <div class="card-body scrollable">
+                <table class="table" id="recent-cash-table">
+                  <thead>
+                    <tr>
+                      <th>القسم</th>
+                      <th>الحركة</th>
+                      <th>التفاصيل والبيان</th>
+                      <th>القيمة</th>
+                      <th>الوقت والتاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Injected by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </section>
+
+        <!-- 2. INVENTORY TAB -->
+        <section id="inventory-tab" class="tab-page">
+          <!-- 🔍 Model & Supplier Search & Full Movement History Query Bar -->
+          <div class="card" style="margin-bottom: 20px; background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(30, 41, 59, 0.6) 100%); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+            <div class="card-body" style="padding: 16px 20px;">
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 10px;">
+                  <span style="font-weight: 700; color: var(--accent-cyan); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                    <i class='bx bx-search-alt-2' style="font-size: 1.25rem;"></i> استعلام وتتبع حركة الأجهزة والموردين/التجار
+                  </span>
+                  <span style="font-size: 0.8rem; color: var(--text-secondary);">فلترة وتتبع حركة التكييفات وحسابات الموردين والتجار</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <div style="flex: 1.2; min-width: 190px;">
+                    <select id="model-history-select" class="form-control" style="width: 100%; font-size: 0.85rem; padding: 8px 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: var(--text-primary);">
+                      <option value="">-- كافة الموديلات والماركات --</option>
+                    </select>
+                  </div>
+                  <div style="flex: 1; min-width: 140px;">
+                    <select id="capacity-history-select" class="form-control" style="width: 100%; font-size: 0.85rem; padding: 8px 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: var(--text-primary);">
+                      <option value="">-- كافة القدرات --</option>
+                      <option value="1.5-حصان">1.5-حصان</option>
+                      <option value="2.25-حصان">2.25-حصان</option>
+                      <option value="3-حصان">3-حصان</option>
+                      <option value="4-حصان">4-حصان</option>
+                      <option value="5-حصان">5-حصان</option>
+                    </select>
+                  </div>
+                  <div style="flex: 1.2; min-width: 190px;">
+                    <select id="supplier-history-select" class="form-control" style="width: 100%; font-size: 0.85rem; padding: 8px 12px; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: var(--text-primary);">
+                      <option value="">-- كافة الموردين والتجار --</option>
+                    </select>
+                  </div>
+                  <button type="button" class="btn btn-primary" onclick="triggerInventoryQuery()" style="font-size: 0.85rem; padding: 8px 18px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; font-weight: 600; white-space: nowrap; box-shadow: 0 2px 8px rgba(14, 165, 233, 0.35);">
+                    📜 عرض سجل التتبع والتحركات
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stocktake Summary Card -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header flex-header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="margin: 0;">📊 جرد المخزن الحالي (أعداد الأجهزة المتاحة)</h3>
+                <button type="button" id="toggle-stock-counts-btn" onclick="toggleStockCountsVisibility()" title="إخفاء/إظهار أعداد الأجهزة" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text-primary); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                  <i class='bx bx-show' id="stock-counts-eye-icon"></i>
+                </button>
+              </div>
+              <div class="actions" style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="openAddDeviceModal()">📥 إدخال جهاز جديد</button>
+                <button class="btn btn-success" onclick="openDispatchDeviceModalGeneral()">📤 صرف وبيع جهاز</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="stocktake-summary-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;">
+                <!-- Injected by JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 🔀 Inventory Section View Switcher Tabs -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; background: rgba(30, 41, 59, 0.6); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <button type="button" id="inventory-subtab-btn-movements" onclick="switchInventorySubTab('movements')" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; font-weight: 700; border: 1px solid #38bdf8; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35); padding: 8px 20px; border-radius: 8px; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease;">
+                <i class='bx bx-history' style="font-size: 1.15rem;"></i> 🔔 أحدث تحركات وتغيرات المخزن
+              </button>
+              <button type="button" id="inventory-subtab-btn-devices" onclick="switchInventorySubTab('devices')" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); font-weight: 600; border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 20px; border-radius: 8px; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease;">
+                <i class='bx bx-cube' style="font-size: 1.15rem;"></i> 📦 إدارة المخزون والأجهزة المستلمة
+              </button>
+            </div>
+          </div>
+
+          <!-- 🔔 Recent Inventory Movements & Changes Card -->
+          <div class="card" id="inventory-movements-card" style="margin-bottom: 20px;">
+            <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="margin: 0; font-size: 1.05rem;">🔔 أحدث تحركات وتغيرات المخزن</h3>
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <input type="text" id="inventory-log-search" oninput="renderInventoryLogEvents(this.value)" placeholder="🔍 ابحث في تحركات المخزن..." style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 5px 10px; font-size: 0.82rem; width: 220px; outline: none;">
+
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">تاريخ الحركة:</span>
+                
+                <div style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);">
+                  <button type="button" class="btn btn-secondary" onclick="adjustInventoryLogDate(-1)" style="padding: 2px 5px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);" title="اليوم السابق">
+                    <i class='bx bx-chevron-right' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                  </button>
+                  <span id="inventory-log-date-text" style="font-weight: 700; color: #38bdf8; font-size: 0.85rem; min-width: 100px; text-align: center; display: inline-block;">🌐 كل الأيام</span>
+                  <button type="button" class="btn btn-secondary" onclick="adjustInventoryLogDate(1)" style="padding: 2px 5px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);" title="اليوم التالي">
+                    <i class='bx bx-chevron-left' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                  </button>
+                </div>
+                
+                <input type="date" id="inventory-log-date-filter" onchange="renderInventoryTab()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 5px 8px; font-size: 0.85rem; width: 140px;">
+                
+                <button type="button" id="inventory-log-btn-all" class="btn btn-secondary" onclick="showAllInventoryLogDays()" style="padding: 5px 10px; font-size: 0.82rem; font-weight: 700; background: #0284c7; border: 1px solid #38bdf8; border-radius: 6px; color: #ffffff; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);">🌐 كل الأيام</button>
+                <button type="button" id="inventory-log-btn-today" class="btn btn-secondary" onclick="setInventoryLogDateOffset(0)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">اليوم</button>
+                <button type="button" id="inventory-log-btn-yesterday" class="btn btn-secondary" onclick="setInventoryLogDateOffset(-1)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">الأمس</button>
+                <button type="button" id="inventory-log-btn-daybefore" class="btn btn-secondary" onclick="setInventoryLogDateOffset(-2)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">قبل أمس</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table" id="inventory-log-table">
+                <thead>
+                  <tr>
+                    <th>تاريخ الحركة</th>
+                    <th>نوع الحركة</th>
+                    <th>رقم الإذن</th>
+                    <th>تفاصيل الجهاز والسيريال</th>
+                    <th>البيان والتفاصيل</th>
+                    <th>المستند المرفق</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 📦 Devices Table Card -->
+          <div class="card" id="inventory-devices-card" style="display: none;">
+            <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+              <h3>📦 إدارة المخزون والأجهزة المستلمة</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="text" id="inventory-search" placeholder="🔍 ابحث بالماركة، القدرة، السيريال، المورد أو العميل..." style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; width: 320px; outline: none; transition: border-color 0.2s;">
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table" id="inventory-table">
+                <thead>
+                  <tr>
+                    <th>الماركة</th>
+                    <th>القدرة</th>
+                    <th>السيريال نمبر</th>
+                    <th>التكلفة (المورد)</th>
+                    <th>السعر (العميل)</th>
+                    <th>حالة الجهاز</th>
+                    <th>الفني المسؤول</th>
+                    <th>التاجر / العميل</th>
+                    <th>التاريخ (استلام / صرف)</th>
+                    <th>العمليات والتحكم</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. SUPPLIERS TAB -->
+        <section id="suppliers-tab" class="tab-page">
+          <div class="card">
+            <div class="card-header flex-header">
+              <h3>🤝 حسابات الموردين والتجار</h3>
+              <button class="btn btn-primary" onclick="openModal('add-supplier-modal')">➕ إضافة مورد/تاجر جديد</button>
+            </div>
+            <div class="card-body">
+              <div class="suppliers-grid" id="suppliers-list">
+                <!-- Injected by JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 📜 سجل العمليات الأخير للموردين والتجار -->
+          <div class="card" style="margin-top: 25px;">
+            <div class="card-header">
+              <h3>📜 أحدث حركات الحسابات (شراء، سداد، بيع، تحصيل)</h3>
+            </div>
+            <div class="card-body" style="padding: 0; overflow-x: auto;">
+              <table class="table" id="recent-suppliers-tx-table">
+                <thead>
+                  <tr>
+                    <th>المورد / التاجر</th>
+                    <th>نوع الحركة</th>
+                    <th>القيمة</th>
+                    <th>الملاحظات / التفاصيل</th>
+                    <th>التاريخ والوقت</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. CUSTOMERS TAB -->
+        <section id="customers-tab" class="tab-page">
+          <div class="card">
+             <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+               <h3>👤 قاعدة بيانات وإدارة العملاء</h3>
+               <div class="search-box" style="max-width: 300px; width: 100%;">
+                 <input type="text" id="customers-search" class="form-control" placeholder="🔍 ابحث بالاسم أو رقم التليفون...">
+               </div>
+             </div>
+            <div class="card-body scrollable">
+              <table class="table" id="customers-table">
+                <thead>
+                  <tr>
+                    <th>العميل والاتصال</th>
+                    <th>العنوان بالتفصيل</th>
+                    <th>الجهاز والسيريال</th>
+                    <th>تاريخ وفني التركيب</th>
+                    <th>الحساب المالي للعميل</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. CASH FLOW TAB -->
+        <section id="cashflow-tab" class="tab-page">
+          <!-- 📊 Cash Flow Stats Grid -->
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(46, 204, 113, 0.1); color: var(--success);">
+                <i class='bx bx-money'></i>
+              </div>
+              <div class="stat-details">
+                <h3>💵 كاش الخزنة الفعلي</h3>
+                <p id="cashflow-stat-cash-only">0 ج.م</p>
+              </div>
+            </div>
+            
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(52, 152, 219, 0.1); color: var(--accent);">
+                <i class='bx bx-credit-card'></i>
+              </div>
+              <div class="stat-details">
+                <h3>💳 السيولة الإلكترونية والبنكية</h3>
+                <p id="cashflow-stat-elec-only">0 ج.م</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(155, 89, 182, 0.1); color: #9b59b6;">
+                <i class='bx bx-wallet'></i>
+              </div>
+              <div class="stat-details">
+                <h3>⚖️ إجمالي السيولة والمحافظ</h3>
+                <p id="cashflow-stat-total">0 ج.م</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h3 style="margin: 0;">💵 سجل الخزنة وحركة اليومية</h3>
+                <button type="button" id="toggle-treasury-btn" onclick="toggleTreasuryVisibility()" title="إخفاء/إظهار مبالغ الخزنة والسيولة" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text-primary); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                  <i class='bx bx-show' id="treasury-eye-icon"></i>
+                </button>
+              </div>
+
+              <!-- 🔍 Search Bar for Treasury and Cash Flow -->
+              <div class="search-box" style="flex: 1; max-width: 380px; min-width: 240px; position: relative;">
+                <input type="text" id="cashflow-search" class="form-control" placeholder="🔍 بحث في الخزنة (عميل، فني، مورد، مبلغ، سيريال...)" oninput="renderCashflowTab()" style="width: 100%; background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.14); border-radius: 8px; padding: 7px 34px 7px 12px; font-size: 0.88rem; color: var(--text-primary); outline: none;">
+                <i class='bx bx-search' style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); pointer-events: none; font-size: 1.1rem;"></i>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">تاريخ اليومية:</span>
+                
+                <div style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);">
+                  <button type="button" class="btn btn-secondary" onclick="adjustCashflowDate(-1)" style="padding: 2px 5px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);">
+                    <i class='bx bx-chevron-right' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                  </button>
+                  <span id="cashflow-date-text" style="font-weight: 700; color: #38bdf8; font-size: 0.85rem; min-width: 100px; text-align: center; display: inline-block;">🌐 كل الأيام</span>
+                  <button type="button" class="btn btn-secondary" onclick="adjustCashflowDate(1)" style="padding: 2px 5px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);">
+                    <i class='bx bx-chevron-left' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                  </button>
+                </div>
+                
+                <input type="date" id="cashflow-date-filter" onchange="renderCashflowTab()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.14); border-radius: 6px; padding: 5px 8px; font-size: 0.85rem; width: 140px;">
+                
+                <button type="button" id="cashflow-btn-all" class="btn btn-secondary" onclick="showAllCashflowDays()" style="padding: 5px 10px; font-size: 0.82rem; font-weight: 700; background: #0284c7; border: 1px solid #38bdf8; border-radius: 6px; color: #ffffff; box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);">🌐 كل الأيام</button>
+                <button type="button" id="cashflow-btn-today" class="btn btn-secondary" onclick="setCashflowDateOffset(0)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">اليوم</button>
+                <button type="button" id="cashflow-btn-yesterday" class="btn btn-secondary" onclick="setCashflowDateOffset(-1)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">الأمس</button>
+                <button type="button" id="cashflow-btn-daybefore" class="btn btn-secondary" onclick="setCashflowDateOffset(-2)" style="padding: 5px 8px; font-size: 0.82rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">قبل أمس</button>
+                
+                <button class="btn btn-primary" onclick="openAddCashModal()">➕ إضافة حركة خزنة يدوية</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <table class="table" id="cashflow-all-table">
+                <thead>
+                  <tr>
+                    <th>النوع</th>
+                    <th>المبلغ</th>
+                    <th>البيان</th>
+                    <th>التاريخ</th>
+                    <th>العمليات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. HR TAB -->
+        <section id="hr-tab" class="tab-page">
+          <div class="hr-container">
+            <div class="card">
+              <div class="card-header flex-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <h3 style="margin: 0;">👥 الموظفين المسجلين</h3>
+                  <button type="button" id="toggle-salaries-btn" onclick="toggleSalariesVisibility()" title="إخفاء/إظهار المرتبات" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--text-primary); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 1.1rem; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;">
+                    <i class='bx bx-show' id="salaries-eye-icon"></i>
+                  </button>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button class="btn btn-primary" onclick="openAddAdvanceModal()">💵 تسجيل سلفة لموظف</button>
+                  <button class="btn btn-primary" onclick="openModal('add-tech-modal')">➕ إضافة موظف جديد</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <table class="table" id="tech-list-table">
+                  <thead>
+                    <tr>
+                      <th>اسم الموظف</th>
+                      <th>الوظيفة</th>
+                      <th>الراتب الأساسي</th>
+                      <th>تاريخ التسجيل</th>
+                      <th>العمليات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Injected by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h3>📅 سجل الحضور والغياب</h3>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.02); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                    <button type="button" class="btn btn-secondary" onclick="adjustAttendanceDate(-1)" style="padding: 3px 6px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);">
+                      <i class='bx bx-chevron-right' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                    </button>
+                    <span id="attendance-date-text" style="font-weight: 600; color: var(--accent); font-size: 0.85rem; min-width: 120px; text-align: center; display: inline-block;">اليوم</span>
+                    <button type="button" class="btn btn-secondary" onclick="adjustAttendanceDate(1)" style="padding: 3px 6px; font-size: 0.85rem; background: transparent; border: none; color: var(--text-primary);">
+                      <i class='bx bx-chevron-left' style="font-size: 1.1rem; vertical-align: middle;"></i>
+                    </button>
+                  </div>
+                  <input type="date" id="attendance-date-filter" onchange="renderHRTab()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 8px; font-size: 0.82rem; width: 140px;">
+                </div>
+              </div>
+              <div class="card-body" id="attendance-summary-container">
+                <!-- Inline attendance tracker from web dashboard -->
+                <p class="info-text">سيتم عرض حضور الموظفين اليوم هنا للتحقق منه.</p>
+                <table class="table" id="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>اسم الموظف</th>
+                      <th>حالة اليوم</th>
+                      <th>وقت الحضور اليومي</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Injected by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Salary Report Card -->
+          <div class="card salary-card-full">
+            <div class="card-header flex-header">
+              <h3>📊 تقرير الرواتب والتسويات</h3>
+              <div class="actions">
+                <select id="salary-month-select" class="select-input">
+                  <!-- Injected by JavaScript -->
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- ⚙️ Commissions & Rates Settings Bar -->
+              <div style="display:flex; flex-direction:row; gap:15px; flex-wrap:wrap; font-size:0.85rem; background:rgba(255,255,255,0.02); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); margin-bottom:20px; align-items:center;">
+                <strong style="color: var(--accent);"><i class='bx bx-cog'></i> إعدادات نسب ومعدلات الموظفين:</strong>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--text-secondary);">عمولة فني:</span>
+                  <input type="number" id="rate-main-tech" value="50" min="0" style="width:65px; padding:5px 8px; font-size:0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:var(--bg-secondary); color:var(--text-primary);" oninput="const m = document.getElementById('salary-month-select'); if(m) calculateAndRenderSalaryReport(m.value);">
+                  <span style="color:var(--text-secondary); font-size:0.75rem;">ج.م</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--text-secondary);">عمولة مساعد:</span>
+                  <input type="number" id="rate-assistant" value="20" min="0" style="width:65px; padding:5px 8px; font-size:0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:var(--bg-secondary); color:var(--text-primary);" oninput="const m = document.getElementById('salary-month-select'); if(m) calculateAndRenderSalaryReport(m.value);">
+                  <span style="color:var(--text-secondary); font-size:0.75rem;">ج.م</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--text-secondary);">عمولة سائق:</span>
+                  <input type="number" id="rate-driver" value="10" min="0" style="width:65px; padding:5px 8px; font-size:0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:var(--bg-secondary); color:var(--text-primary);" oninput="const m = document.getElementById('salary-month-select'); if(m) calculateAndRenderSalaryReport(m.value);">
+                  <span style="color:var(--text-secondary); font-size:0.75rem;">ج.م</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--text-secondary);">نسبة فني صيانة:</span>
+                  <input type="number" id="rate-job-order-pct" value="10" min="0" max="100" style="width:65px; padding:5px 8px; font-size:0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:var(--bg-secondary); color:var(--text-primary);" oninput="const m = document.getElementById('salary-month-select'); if(m) calculateAndRenderSalaryReport(m.value);">
+                  <span style="color:var(--text-secondary); font-size:0.75rem;">%</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--text-secondary);">نسبة مساعد صيانة:</span>
+                  <input type="number" id="rate-job-order-assistant-pct" value="5" min="0" max="100" style="width:65px; padding:5px 8px; font-size:0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:var(--bg-secondary); color:var(--text-primary);" oninput="const m = document.getElementById('salary-month-select'); if(m) calculateAndRenderSalaryReport(m.value);">
+                  <span style="color:var(--text-secondary); font-size:0.75rem;">%</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="color:var(--text-secondary);">نسبة سائق صيانة:</span>
+                  <input type="number" id="rate-job-order-driver-pct" value="2" min="0" max="100" style="width:65px; padding:5px 8px; font-size:0.85rem; border-radius:6px; border:1px solid rgba(255,255,255,0.1); background:var(--bg-secondary); color:var(--text-primary);" oninput="const m = document.getElementById('salary-month-select'); if(m) calculateAndRenderSalaryReport(m.value);">
+                  <span style="color:var(--text-secondary); font-size:0.75rem;">%</span>
+                </div>
+              </div>
+
+              <table class="table" id="salary-report-table">
+                <thead>
+                  <tr>
+                    <th>الموظف</th>
+                    <th>الراتب الأساسي</th>
+                    <th>العمولات والمعدلات</th>
+                    <th>أيام الغياب (الخصم)</th>
+                    <th>مرات التأخير (الخصم)</th>
+                    <th>إجمالي السلف</th>
+                    <th>صافي الراتب المستحق</th>
+                    <th>العمليات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Injected by JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. CONTRACTS TAB -->
+        <section id="contracts-tab" class="tab-page">
+          <div class="card">
+            <div class="card-header" style="display:flex; flex-direction:row; flex-wrap:wrap; justify-content:space-between; align-items:center; gap: 14px;">
+              <div style="display:flex; flex-direction:column; gap:10px; flex:1; min-width:300px;">
+                <h3>📸 أرشيف ومعرض العقود والمستندات</h3>
+                <!-- Filter Chips -->
+                <div id="contracts-filter-bar" style="display:flex; flex-wrap:wrap; gap:8px;">
+                  <button class="doc-filter-btn active" data-filter="all" onclick="filterContracts('all')">🗂️ الكل</button>
+                  <button class="doc-filter-btn" data-filter="__installation_report__" onclick="filterContracts('__installation_report__')">🛠️ محاضر التركيب</button>
+                  <button class="doc-filter-btn" data-filter="__sales_contract__" onclick="filterContracts('__sales_contract__')">📄 عقود البيع</button>
+                  <button class="doc-filter-btn" data-filter="__tax_invoice__" onclick="filterContracts('__tax_invoice__')">🧾 الفواتير الضريبية</button>
+                  <button class="doc-filter-btn" data-filter="__delivery_note__" onclick="filterContracts('__delivery_note__')">📦 أذونات الصرف</button>
+                  <button class="doc-filter-btn" data-filter="__delivery_receipt__" onclick="filterContracts('__delivery_receipt__')">📥 أذونات الاستلام</button>
+                  <button class="doc-filter-btn" data-filter="__cash_receipt__" onclick="filterContracts('__cash_receipt__')">🧾 إيصالات الاستلام/السداد</button>
+                  <button class="doc-filter-btn" data-filter="__job_order__" onclick="filterContracts('__job_order__')">🔧 أوامر الشغل</button>
+                  <button class="doc-filter-btn" data-filter="__general_doc__" onclick="filterContracts('__general_doc__')">📎 مستندات عامة</button>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center;">
+                <input type="text" id="contracts-search" placeholder="البحث بالسيريال أو اسم المورد/العميل..." class="search-input" style="width: 320px; font-size:0.9rem; padding: 10px 16px;">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="contracts-gallery" id="contracts-gallery-list">
+                <!-- Injected by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. FINANCIAL CENTER TAB -->
+        <section id="financial-tab" class="tab-page">
+          <!-- Top financial stats grid -->
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card" style="border-left: 4px solid var(--success);">
+              <div class="stat-icon income">
+                <i class='bx bx-money'></i>
+              </div>
+              <div class="stat-details">
+                <h3>كاش الخزنة الفعلي</h3>
+                <p id="fin-cash-only" style="color: var(--success); font-weight: 700;">0 ج.م</p>
+              </div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--accent-cyan);">
+              <div class="stat-icon income">
+                <i class='bx bx-credit-card'></i>
+              </div>
+              <div class="stat-details">
+                <h3>السيولة الإلكترونية والبنكية</h3>
+                <p id="fin-elec-only" style="color: var(--accent-cyan); font-weight: 700;">0 ج.م</p>
+              </div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--accent);">
+              <div class="stat-icon installation">
+                <i class='bx bx-trending-up'></i>
+              </div>
+              <div class="stat-details">
+                <h3>ديون مستحقة لنا طرف الغير</h3>
+                <p id="fin-total-receivables" style="color: var(--accent); font-weight: 700;">0 ج.م</p>
+              </div>
+            </div>
+            <div class="stat-card" style="border-left: 4px solid var(--danger);">
+              <div class="stat-icon debt-supplier">
+                <i class='bx bx-trending-down'></i>
+              </div>
+              <div class="stat-details">
+                <h3>التزامات علينا للآخرين</h3>
+                <p id="fin-total-payables" style="color: var(--danger); font-weight: 700;">0 ج.m</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px;">
+            <button class="btn btn-primary" onclick="openRecordFinancialTxModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 600; background: var(--success); border-color: var(--success);">
+              <i class='bx bx-transfer-alt'></i>
+              <span>💵 تسجيل دفعة / تحصيل</span>
+            </button>
+            <button class="btn btn-primary" onclick="openAddFinancialItemModal()" style="display: flex; align-items: center; gap: 6px; font-weight: 600;">
+              <i class='bx bx-plus-circle'></i>
+              <span>إضافة حساب أو بند مالي جديد</span>
+            </button>
+          </div>
+
+          <!-- 3-Column layout for categories -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+            
+            <!-- Column 1: Liquidity -->
+            <div class="card">
+              <div class="card-header" style="border-bottom: 2px solid var(--success); padding: 12px 15px;">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: var(--success);">
+                  <i class='bx bx-wallet-alt'></i>
+                  <span>السيولة النقدية والمحافظ البنكية</span>
+                </h3>
+              </div>
+              <div class="card-body scrollable" style="max-height: 400px; padding: 10px;">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>الحساب</th>
+                      <th>الرصيد الحالي</th>
+                      <th style="text-align: center;">إجراء</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fin-liquidity-table">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Column 2: Receivables -->
+            <div class="card">
+              <div class="card-header" style="border-bottom: 2px solid var(--accent); padding: 12px 15px;">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: var(--accent);">
+                  <i class='bx bx-chevrons-right'></i>
+                  <span>ديون مستحقة لنا (لينا عند الناس)</span>
+                </h3>
+              </div>
+              <div class="card-body scrollable" style="max-height: 400px; padding: 10px;">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>الاسم / العميل</th>
+                      <th>القيمة</th>
+                      <th style="text-align: center;">إجراء</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fin-receivables-table">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Column 3: Payables -->
+            <div class="card">
+              <div class="card-header" style="border-bottom: 2px solid var(--danger); padding: 12px 15px;">
+                <h3 style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: var(--danger);">
+                  <i class='bx bx-chevrons-left'></i>
+                  <span>التزامات مستحقة للغير (علينا للناس)</span>
+                </h3>
+              </div>
+              <div class="card-body scrollable" style="max-height: 400px; padding: 10px;">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>الاسم / المورد</th>
+                      <th>القيمة</th>
+                      <th style="text-align: center;">إجراء</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fin-payables-table">
+                    <!-- Dynamic rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 9. PROFITS AND LOSSES TAB -->
+        <section id="profits-tab" class="tab-page">
+          <!-- Filter options card -->
+          <div class="card" style="margin-bottom: 20px; padding: 15px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+              <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i class='bx bx-calendar-event' style="color: var(--accent); font-size: 1.3rem;"></i>
+                <span>تحديد نطاق حساب الأرباح والخسائر:</span>
+              </h3>
+              
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <label style="font-size: 0.88rem; color: var(--text-secondary);">من:</label>
+                <input type="date" id="profits-start-date" class="form-control" style="max-width: 170px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.88rem;">
+                
+                <label style="font-size: 0.88rem; color: var(--text-secondary);">إلى:</label>
+                <input type="date" id="profits-end-date" class="form-control" style="max-width: 170px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.88rem;">
+                
+                <button class="btn btn-primary" onclick="calculateProfits()" style="padding: 6px 18px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                  <i class='bx bx-calculator'></i>
+                  <span>حساب الأرباح</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Date presets row -->
+            <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+              <button class="btn btn-secondary btn-sm" id="btn-preset-today" onclick="setProfitsPreset('today')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">اليوم</button>
+              <button class="btn btn-secondary btn-sm" id="btn-preset-yesterday" onclick="setProfitsPreset('yesterday')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">أمس</button>
+              <button class="btn btn-secondary btn-sm" id="btn-preset-this-week" onclick="setProfitsPreset('this-week')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">هذا الأسبوع</button>
+              <button class="btn btn-secondary btn-sm active" id="btn-preset-this-month" onclick="setProfitsPreset('this-month')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">هذا الشهر</button>
+              <button class="btn btn-secondary btn-sm" id="btn-preset-last-month" onclick="setProfitsPreset('last-month')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">الشهر الماضي</button>
+              <button class="btn btn-secondary btn-sm" id="btn-preset-all-time" onclick="setProfitsPreset('all-time')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">كل الأوقات</button>
+            </div>
+          </div>
+
+          <!-- Stats summary cards -->
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card" style="border-left: 4px solid var(--accent-cyan);">
+              <div class="stat-icon" style="background: rgba(14, 165, 233, 0.12); color: var(--accent-cyan);">
+                <i class='bx bx-cabinet'></i>
+              </div>
+              <div class="stat-details">
+                <h3>عدد الأجهزة المباعة</h3>
+                <p id="profits-stat-count" style="color: var(--accent-cyan); font-weight: 700; font-size: 1.15rem;">0 جهاز</p>
+              </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid var(--warning);">
+              <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);">
+                <i class='bx bx-purchase-tag'></i>
+              </div>
+              <div class="stat-details">
+                <h3>إجمالي تكلفة الشراء</h3>
+                <p id="profits-stat-cost" style="color: var(--warning); font-weight: 700; font-size: 1.15rem;">0 ج.م</p>
+              </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid var(--success);">
+              <div class="stat-icon income">
+                <i class='bx bx-money'></i>
+              </div>
+              <div class="stat-details">
+                <h3>إجمالي قيمة المبيعات</h3>
+                <p id="profits-stat-sales" style="color: var(--success); font-weight: 700; font-size: 1.15rem;">0 ج.م</p>
+              </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);">
+              <div class="stat-icon" style="background: rgba(168, 85, 247, 0.12); color: #c084fc;">
+                <i class='bx bx-trending-up'></i>
+              </div>
+              <div class="stat-details">
+                <h3>صافي الأرباح المحققة</h3>
+                <p id="profits-stat-net" style="color: #c084fc; font-weight: 700; font-size: 1.35rem;">0 ج.م</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Breakdown table card -->
+          <div class="card">
+            <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <h3>📊 تفاصيل العمليات والأرباح لكل جهاز</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="text" id="profits-search-input" onkeyup="filterProfitsTable()" placeholder="🔍 ابحث بالسيريال، العميل، الماركة..." style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; width: 260px; outline: none;">
+              </div>
+            </div>
+            <div class="card-body scrollable" style="max-height: 550px; overflow-y: auto; padding: 0;">
+              <table class="table" id="profits-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>تاريخ البيع</th>
+                    <th>تفاصيل وموديل الجهاز</th>
+                    <th>السيريال نمبر</th>
+                    <th>تكلفة الشراء</th>
+                    <th>سعر البيع</th>
+                    <th>الربح المحقق</th>
+                  </tr>
+                </thead>
+                <tbody style="font-size: 0.9rem;">
+                  <!-- Filled dynamically by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. WORK ORDERS AND MAINTENANCE TAB -->
+        <section id="workorders-tab" class="tab-page">
+          <!-- Filter options card -->
+          <div class="card" style="margin-bottom: 20px; padding: 15px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+              <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                <i class='bx bx-wrench' style="color: var(--accent-cyan); font-size: 1.3rem;"></i>
+                <span>تحديد نطاق تقارير أوامر الشغل والصيانة:</span>
+              </h3>
+              
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <label style="font-size: 0.88rem; color: var(--text-secondary);">من:</label>
+                <input type="date" id="workorders-start-date" class="form-control" style="max-width: 170px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.88rem;">
+                
+                <label style="font-size: 0.88rem; color: var(--text-secondary);">إلى:</label>
+                <input type="date" id="workorders-end-date" class="form-control" style="max-width: 170px; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.88rem;">
+                
+                <button class="btn btn-primary" onclick="calculateWorkOrders()" style="padding: 6px 18px; font-weight: 600; display: flex; align-items: center; gap: 6px; background: var(--accent-cyan); color: #fff;">
+                  <i class='bx bx-calculator'></i>
+                  <span>حساب وتحديث</span>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Date presets row -->
+            <div style="display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px; align-items: center; justify-content: space-between;">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" id="btn-wo-preset-today" onclick="setWorkOrdersPreset('today')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">اليوم</button>
+                <button class="btn btn-secondary btn-sm" id="btn-wo-preset-yesterday" onclick="setWorkOrdersPreset('yesterday')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">أمس</button>
+                <button class="btn btn-secondary btn-sm" id="btn-wo-preset-this-week" onclick="setWorkOrdersPreset('this-week')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">هذا الأسبوع</button>
+                <button class="btn btn-secondary btn-sm active" id="btn-wo-preset-this-month" onclick="setWorkOrdersPreset('this-month')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">هذا الشهر</button>
+                <button class="btn btn-secondary btn-sm" id="btn-wo-preset-last-month" onclick="setWorkOrdersPreset('last-month')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">الشهر الماضي</button>
+                <button class="btn btn-secondary btn-sm" id="btn-wo-preset-all-time" onclick="setWorkOrdersPreset('all-time')" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 12px;">كل الأوقات</button>
+              </div>
+
+              <!-- Branch filter dropdown -->
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="font-size: 0.8rem; color: var(--text-secondary);">تصفية النوع:</span>
+                <select id="workorders-type-filter" onchange="calculateWorkOrders()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 4px 10px; font-size: 0.82rem; outline: none;">
+                  <option value="all">جميع أوامر الشغل</option>
+                  <option value="صيانة">🧰 صيانة وغسيل فقط</option>
+                  <option value="أعمال إضافية">⚡ أعمال إضافية وتجهيزات فقط</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats summary cards -->
+          <div class="stats-grid" style="margin-bottom: 20px;">
+            <div class="stat-card" style="border-left: 4px solid var(--accent-cyan);">
+              <div class="stat-icon" style="background: rgba(14, 165, 233, 0.12); color: var(--accent-cyan);">
+                <i class='bx bx-wrench'></i>
+              </div>
+              <div class="stat-details">
+                <h3>إجمالي أوامر الشغل المنفذة</h3>
+                <p id="wo-stat-count" style="color: var(--accent-cyan); font-weight: 700; font-size: 1.15rem;">0 أمر شغل</p>
+              </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid var(--success);">
+              <div class="stat-icon income">
+                <i class='bx bx-money'></i>
+              </div>
+              <div class="stat-details">
+                <h3>إجمالي إيرادات أوامر الشغل</h3>
+                <p id="wo-stat-total-revenue" style="color: var(--success); font-weight: 700; font-size: 1.15rem;">0 ج.م</p>
+              </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid var(--warning);">
+              <div class="stat-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--warning);">
+                <i class='bx bx-cog'></i>
+              </div>
+              <div class="stat-details">
+                <h3>إيرادات الصيانة 🧰</h3>
+                <p id="wo-stat-maint-revenue" style="color: var(--warning); font-weight: 700; font-size: 1.15rem;">0 ج.م</p>
+              </div>
+            </div>
+            
+            <div class="stat-card" style="border-left: 4px solid #a855f7;">
+              <div class="stat-icon" style="background: rgba(168, 85, 247, 0.12); color: #c084fc;">
+                <i class='bx bx-bolt-circle'></i>
+              </div>
+              <div class="stat-details">
+                <h3>إيرادات الأعمال الإضافية ⚡</h3>
+                <p id="wo-stat-extra-revenue" style="color: #c084fc; font-weight: 700; font-size: 1.15rem;">0 ج.م</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 👨‍🔧 TECHNICIANS PRODUCTIVITY & REVENUE LEADERBOARD -->
+          <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.1rem; color: var(--text-primary);">
+                <i class='bx bxs-user-badge' style="color: var(--accent-cyan); font-size: 1.3rem;"></i>
+                <span>👨‍🔧 تقرير إنتاجية ومعدلات الفنيين (كم أدخل كل فني أرباح وإيرادات للشركة):</span>
+              </h3>
+              <span id="wo-tech-period-label" style="font-size: 0.85rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 6px;"></span>
+            </div>
+            <div class="card-body scrollable" style="max-height: 400px; overflow-y: auto; padding: 0;">
+              <table class="table" id="wo-tech-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>اسم الفني / الموظف</th>
+                    <th>عدد أوامر الشغل</th>
+                    <th>أوامر صيانة 🧰</th>
+                    <th>أعمال إضافية ⚡</th>
+                    <th>إجمالي الإيرادات التي أدخلها للفترة 💰</th>
+                    <th>متوسط دخل الأمر</th>
+                  </tr>
+                </thead>
+                <tbody style="font-size: 0.9rem;">
+                  <!-- Dynamic Technician Rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Detailed Work Orders Log Table -->
+          <div class="card">
+            <div class="card-header flex-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+              <h3>📋 سجل تفاصيل جميع أوامر الشغل والصيانة</h3>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="text" id="workorders-search-input" onkeyup="filterWorkOrdersTable()" placeholder="🔍 ابحث بالعميل، الفني، التليفون، تفاصيل العمل..." style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; width: 280px; outline: none;">
+              </div>
+            </div>
+            <div class="card-body scrollable" style="max-height: 550px; overflow-y: auto; padding: 0;">
+              <table class="table" id="workorders-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>التاريخ</th>
+                    <th>نوع أمر الشغل</th>
+                    <th>بيانات العميل</th>
+                    <th>تفاصيل العمل المنفذ</th>
+                    <th>الفريق / الفنيين</th>
+                    <th>المبلغ المحصل</th>
+                    <th>المستندات والمرفقات</th>
+                  </tr>
+                </thead>
+                <tbody style="font-size: 0.9rem;">
+                  <!-- Filled dynamically by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- 📥 MODAL: ADD MANUAL CASH -->
+  <div id="add-cash-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="cash-modal-title">➕ إضافة حركة مالية يدوية للخزنة</h3>
+        <span class="close" onclick="closeModal('add-cash-modal')">&times;</span>
+      </div>
+      <form id="add-cash-form">
+        <input type="hidden" id="cash-edit-id" value="">
+        <div class="form-group">
+          <label>نوع المعاملة:</label>
+          <select id="cash-type" class="form-control" onchange="updateCashTypeHelp(); toggleCashCustomerFields();" required>
+            <option value="">-- اختر النوع --</option>
+            <option value="إيراد">📥 إيراد (مداخيل)</option>
+            <option value="مصروف">📤 مصروف (تكاليف)</option>
+          </select>
+          <div id="cash-type-help" class="hidden" style="margin-top: 10px; padding: 10px; background: rgba(52, 152, 219, 0.05); border: 1px dashed rgba(52, 152, 219, 0.2); border-radius: 6px; font-size: 0.85rem; color: var(--text-primary); line-height: 1.4;"></div>
+        </div>
+        <div class="form-group">
+          <label>المبلغ (ج.م):</label>
+          <input type="number" id="cash-amount" class="form-control" placeholder="أدخل القيمة بالجنيه" required min="0">
+        </div>
+        <div class="form-group">
+          <label>البيان / الوصف:</label>
+          <input type="text" id="cash-desc" class="form-control" placeholder="مثال: فاتورة كهرباء، صيانة سيارة..." required>
+        </div>
+        <div class="form-group">
+          <label>💳 الحساب المالي (الخزنة/المحفظة المتأثرة):</label>
+          <select id="cash-payment-method" class="form-control" required>
+            <option value="خزنة">💵 كاش (خزنة الشركة)</option>
+            <option value="فودافون كاش">📱 فودافون كاش</option>
+            <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+            <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+            <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+          </select>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-top:5px;">سيتأثر رصيد الحساب المالي المحدد تلقائياً بالزيادة أو النقصان عند حفظ الحركة.</p>
+        </div>
+        
+        <div class="form-group-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 10px;">
+          <div class="form-group">
+            <label>🔧 الفني المسؤول (اختياري):</label>
+            <select id="cash-tech-select" class="form-control" onchange="toggleCashCustomerFields()">
+              <option value="">-- بدون فني --</option>
+              <!-- Injected by JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>🤝 المساعد (اختياري):</label>
+            <select id="cash-assistant-select" class="form-control" onchange="toggleCashCustomerFields()">
+              <option value="">-- بدون مساعد --</option>
+              <!-- Injected by JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>🚚 السائق (اختياري):</label>
+            <select id="cash-driver-select" class="form-control" onchange="toggleCashCustomerFields()">
+              <option value="">-- بدون سائق --</option>
+              <!-- Injected by JS -->
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <label style="color: var(--accent); display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-camera'></i>
+            <span>إرفاق ملف أو مستند (اختياري):</span>
+          </label>
+          <select id="cash-attachment-type" class="form-control" style="margin-bottom:8px;" onchange="toggleCashCustomerFields()">
+            <option value="general">📄 مستند عام / فاتورة شراء</option>
+            <option value="job_order">🔧 أمر شغل (صيانة / تركيب خارجي)</option>
+            <option value="cash_receipt">🧾 إيصال استلام نقدية</option>
+          </select>
+          <input type="file" id="cash-attachment-file" class="form-control" accept="image/*">
+        </div>
+        <!-- Dynamic Customer Details Section for Job Orders -->
+        <div id="cash-customer-section" class="hidden" style="margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 15px; background: rgba(52, 152, 219, 0.03); border-radius: 8px; padding: 12px; border: 1px solid rgba(52, 152, 219, 0.1);">
+          <h4 style="color: var(--accent); margin-bottom: 10px; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-user-pin'></i>
+            <span>👤 بيانات العميل لمستند أمر الشغل (مطلوب):</span>
+          </h4>
+          <div class="form-group autocomplete-container" style="margin-bottom: 10px;">
+            <label style="font-size: 0.8rem;">اسم العميل:</label>
+            <input type="text" id="cash-customer-name" class="form-control" placeholder="ادخل اسم العميل بالكامل" autocomplete="off">
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.8rem;">رقم التليفون:</label>
+            <input type="text" id="cash-customer-phone" class="form-control" placeholder="رقم تليفون/موبايل العميل">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.8rem;">العنوان:</label>
+            <input type="text" id="cash-customer-address" class="form-control" placeholder="عنوان العميل بالتفصيل">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-cash-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ المعاملة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📥 MODAL: ADD TECHNICIAN -->
+  <div id="add-tech-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>👥 تسجيل موظف جديد بالنظام</h3>
+        <span class="close" onclick="closeModal('add-tech-modal')">&times;</span>
+      </div>
+      <form id="add-tech-form">
+        <div class="form-group">
+          <label>اسم الموظف:</label>
+          <input type="text" id="tech-name" class="form-control" placeholder="أدخل اسم الموظف كاملاً" required>
+        </div>
+        <div class="form-group">
+          <label>الوظيفة:</label>
+          <input type="text" id="tech-role" class="form-control" placeholder="مثال: فني، مساعد، محاسب، إداري" required>
+        </div>
+        <div class="form-group">
+          <label>الراتب الشهري الأساسي (ج.م):</label>
+          <input type="number" id="tech-salary" class="form-control" placeholder="مثال: 6000" required min="0">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-tech-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">تسجيل</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📥 MODAL: PAY SUPPLIER -->
+  <div id="pay-supplier-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🤝 سداد دفعة للمورد</h3>
+        <span class="close" onclick="closeModal('pay-supplier-modal')">&times;</span>
+      </div>
+      <form id="pay-supplier-form">
+        <input type="hidden" id="pay-supplier-id">
+        <div class="form-group">
+          <label>اسم المورد:</label>
+          <input type="text" id="pay-supplier-name" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>📅 تاريخ المعاملة:</label>
+          <input type="date" id="pay-supplier-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>المبلغ المدفوع (ج.م):</label>
+          <input type="number" id="pay-supplier-amount" class="form-control" placeholder="أدخل المبلغ" required min="0">
+        </div>
+        <div class="form-group">
+          <label>💳 طريقة الدفع (تخصم من حساب):</label>
+           <select id="pay-supplier-method" class="form-control" required>
+            <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+            <option value="فودافون كاش">📱 فودافون كاش</option>
+            <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+            <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+            <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <label style="color: var(--accent); display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-camera'></i>
+            <span>إرفاق صورة إيصال سداد / ملف (اختياري):</span>
+          </label>
+          <input type="file" id="pay-supplier-receipt" class="form-control" accept="image/*,application/pdf">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('pay-supplier-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">سداد وتحديث الحساب</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📥 MODAL: COLLECT CUSTOMER PAYMENT -->
+  <div id="collect-payment-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>👤 تحصيل قسط/دفعة من عميل</h3>
+        <span class="close" onclick="closeModal('collect-payment-modal')">&times;</span>
+      </div>
+      <form id="collect-payment-form">
+        <input type="hidden" id="collect-device-id">
+        <div class="form-group">
+          <label>اسم العميل:</label>
+          <input type="text" id="collect-customer-name" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>المبلغ المتبقي عليه (ج.م):</label>
+          <input type="text" id="collect-amount-remaining" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>المبلغ المحصل حالياً (ج.م):</label>
+          <input type="number" id="collect-amount" class="form-control" placeholder="أدخل المبلغ المحصل" required min="0">
+        </div>
+        <div class="form-group">
+          <label>💳 طريقة استلام المبلغ:</label>
+          <select id="collect-payment-method" class="form-control" required>
+            <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+            <option value="فودافون كاش">📱 فودافون كاش</option>
+            <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+            <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+            <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <label style="color: var(--accent); display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-camera'></i>
+            <span>إرفاق صورة إيصال استلام نقدية (اختياري):</span>
+          </label>
+          <input type="file" id="collect-receipt-image" class="form-control" accept="image/*">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('collect-payment-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">تسجيل التحصيل</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL: EDIT CUSTOMER DETAILS -->
+  <div id="edit-customer-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class='bx bx-user-pin' style="color: var(--accent-cyan);"></i> تعديل بيانات العميل</h3>
+        <span class="close" onclick="closeModal('edit-customer-modal')">&times;</span>
+      </div>
+      <form id="edit-customer-form" onsubmit="handleEditCustomerSubmit(event)">
+        <input type="hidden" id="edit-customer-type">
+        <input type="hidden" id="edit-customer-target-id">
+        <input type="hidden" id="edit-customer-old-name">
+        <input type="hidden" id="edit-customer-old-phone">
+        <input type="hidden" id="edit-customer-old-address">
+        
+        <div class="form-group">
+          <label>اسم العميل بالكامل:</label>
+          <input type="text" id="edit-customer-name" class="form-control" required placeholder="أدخل اسم العميل المعدل">
+        </div>
+        <div class="form-group">
+          <label>رقم الموبايل / التليفون:</label>
+          <input type="text" id="edit-customer-phone" class="form-control" placeholder="أدخل رقم الموبايل">
+        </div>
+        <div class="form-group">
+          <label>العنوان بالتفصيل:</label>
+          <input type="text" id="edit-customer-address" class="form-control" placeholder="أدخل العنوان بالتفصيل">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('edit-customer-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary" style="background: var(--accent-cyan); border-color: var(--accent-cyan);">حفظ التغييرات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📥 MODAL: COLLECT TRADER PAYMENT -->
+  <div id="collect-trader-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🤝 تحصيل دفعة من تاجر/مورد</h3>
+        <span class="close" onclick="closeModal('collect-trader-modal')">&times;</span>
+      </div>
+      <form id="collect-trader-form">
+        <input type="hidden" id="collect-trader-id">
+        <div class="form-group">
+          <label>اسم التاجر:</label>
+          <input type="text" id="collect-trader-name" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>المبلغ المستحق عليه لنا (ج.م):</label>
+          <input type="text" id="collect-trader-debt" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>📅 تاريخ التحصيل:</label>
+          <input type="date" id="collect-trader-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>المبلغ المحصل (ج.م):</label>
+          <input type="number" id="collect-trader-amount" class="form-control" placeholder="أدخل المبلغ المحصل" required min="0">
+        </div>
+        <div class="form-group">
+          <label>💳 طريقة استلام المبلغ (تضاف لحساب):</label>
+          <select id="collect-trader-method" class="form-control" required>
+            <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+            <option value="فودافون كاش">📱 فودافون كاش</option>
+            <option value="إنستا باي">⚡ إنستا باي (InstaPay)</option>
+            <option value="بنك">🏦 تحويل بنكي</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <label style="color: var(--accent); display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-camera'></i>
+            <span>إرفاق صورة إيصال استلام / ملف (اختياري):</span>
+          </label>
+          <input type="file" id="collect-trader-receipt" class="form-control" accept="image/*,application/pdf">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('collect-trader-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">تسجيل التحصيل</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📦 MODAL: STOCKTAKE MODEL DETAILS -->
+  <div id="stocktake-detail-modal" class="modal">
+    <div class="modal-content" style="max-width: 980px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="stocktake-detail-title" style="margin: 0;">📦 تفاصيل أجهزة المخزن المتاحة</h3>
+        <span class="close" onclick="closeModal('stocktake-detail-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <!-- Filter & Summary Banner -->
+        <div id="stocktake-detail-banner" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 12px 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary); display: block;">ماركة وموديل التكييف:</span>
+            <strong id="stocktake-detail-model-name" style="font-size: 1.2rem; color: var(--accent-cyan);">-</strong>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-secondary" onclick="openModelHistoryModalFromStocktake()" style="background: rgba(14,165,233,0.15); border: 1px solid rgba(14,165,233,0.4); color: var(--accent-cyan); font-size: 0.85rem; padding: 6px 12px; display: flex; align-items: center; gap: 6px;">
+              📜 عرض السجل الكامل للتحركات (كل الأجهزة والمرفقات)
+            </button>
+            <div style="background: rgba(255,255,255,0.04); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">عدد الأجهزة المتاحة حالياً:</span>
+              <strong id="stocktake-detail-count" style="font-size: 1.1rem; color: var(--success); margin-right: 6px;">0 أجهزة</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table of devices -->
+        <div class="table-responsive" style="max-height: 440px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <table class="table" id="stocktake-detail-table" style="margin: 0;">
+            <thead>
+              <tr>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">#</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">السيريال (فانة / كباس)</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">المورد المصدر</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">تاريخ الاستلام</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">تكلفة الشراء</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">إذن الاستلام والملفات المرفقة</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">العمليات</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📦 MODAL: BATCH TRANSACTION DETAILS -->
+  <div id="batch-detail-modal" class="modal">
+    <div class="modal-content" style="max-width: 920px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="batch-modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+          <i class='bx bx-package' style="color: #a855f7;"></i> تفاصيل وتجميعة إذن العمليات المجمعة
+        </h3>
+        <span class="close" onclick="closeModal('batch-detail-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span style="font-size: 0.82rem; color: var(--text-secondary); display: block;">رقم الإذن والعملية المجمعة:</span>
+            <strong id="batch-modal-id" style="font-size: 1.2rem; color: #a855f7;">-</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.82rem; color: var(--text-secondary); display: block;">عدد الأجهزة المشمولة في الإذن:</span>
+            <strong id="batch-modal-count" style="font-size: 1.2rem; color: var(--accent-cyan);">0 أجهزة</strong>
+          </div>
+          <div>
+            <span style="font-size: 0.82rem; color: var(--text-secondary); display: block;">إجمالي قيمة الإذن المجمع:</span>
+            <strong id="batch-modal-total" style="font-size: 1.25rem; color: var(--success);">0 ج.م</strong>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 420px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <table class="table" id="batch-detail-table" style="margin: 0;">
+            <thead>
+              <tr>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">#</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">الماركة والقدرة</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">السيريال (فانة / كباس)</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">الجهة (المورد / العميل)</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">السعر الفردي</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">المرفقات وإذن العملية</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📜 MODAL: MODEL MOVEMENT & DEVICE HISTORY -->
+  <div id="model-history-modal" class="modal">
+    <div class="modal-content" style="max-width: 1050px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="model-history-title" style="margin: 0;">📜 سجل وتاريخ حركة موديل التكييف</h3>
+        <span class="close" onclick="closeModal('model-history-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <!-- Search & Filter Header -->
+        <div style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 10px; padding: 14px 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div>
+              <span style="font-size: 0.82rem; color: var(--text-secondary); display: block;">موديل التكييف المحدد:</span>
+              <strong id="model-history-name" style="font-size: 1.25rem; color: var(--accent-cyan);">-</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.82rem; color: var(--text-secondary); display: block;">تصفية حسب التاجر/المورد:</span>
+              <select id="modal-supplier-filter" class="form-control" style="font-size: 0.83rem; padding: 3px 8px; min-width: 170px; height: 32px; margin-top: 2px;" onchange="filterModelHistoryByModalSupplier(this.value)">
+                <option value="">-- كل الموردين والتجار --</option>
+              </select>
+            </div>
+            <!-- Quick Filter Tabs -->
+            <div style="display: flex; gap: 6px; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap;">
+              <button class="btn btn-secondary btn-sm model-tab-btn active" id="btn-tab-all" onclick="filterModelHistoryTab('all')" style="padding: 4px 12px; font-size: 0.82rem;">📊 كافة التحركات</button>
+              <button class="btn btn-secondary btn-sm model-tab-btn" id="btn-tab-received" onclick="filterModelHistoryTab('received')" style="padding: 4px 12px; font-size: 0.82rem; color: #10b981;">📥 تم استلامه (سجل الاستلام)</button>
+              <button class="btn btn-secondary btn-sm model-tab-btn" id="btn-tab-dispatched" onclick="filterModelHistoryTab('dispatched')" style="padding: 4px 12px; font-size: 0.82rem; color: #f59e0b;">📤 تم صرفه (سجل الصرف)</button>
+              <button class="btn btn-secondary btn-sm model-tab-btn" id="btn-tab-available" onclick="filterModelHistoryTab('available')" style="padding: 4px 12px; font-size: 0.82rem; color: var(--accent-cyan);">🟢 المتاح بالمخزن</button>
+            </div>
+          </div>
+
+          <!-- Summary Badges -->
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 4px 10px; text-align: center;">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">📥 إجمالي ما تم استلامه</span>
+              <strong id="model-summary-received" style="color: #10b981; font-size: 1.05rem;">0 أجهزة</strong>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 4px 10px; text-align: center;">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">📤 إجمالي ما تم صرفه</span>
+              <strong id="model-summary-dispatched" style="color: #f59e0b; font-size: 1.05rem;">0 أجهزة</strong>
+            </div>
+            <div style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 4px 10px; text-align: center;">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">🟢 المتاح بالمخزن حالياً</span>
+              <strong id="model-summary-available" style="color: var(--accent-cyan); font-size: 1.05rem;">0 أجهزة</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="table-responsive" style="max-height: 450px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <table class="table" id="model-history-table" style="margin: 0;">
+            <thead>
+              <tr>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">#</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">التاريخ والوقت</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">السيريال نمبر</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">نوع الحركة والوضع الحالي</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">البيان والتفاصيل (المورد/العميل)</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">الأسعار (شراء/بيع)</th>
+                <th style="position: sticky; top: 0; background-color: #172133; z-index: 10;">إذونات الاستلام والمستندات المرفقة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🗓️ MODAL: EMPLOYEE MONTHLY ATTENDANCE CALENDAR -->
+  <div id="employee-monthly-attendance-modal" class="modal">
+    <div class="modal-content" style="max-width: 980px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="employee-calendar-modal-title" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+          <i class='bx bx-calendar-event' style="color: var(--accent-cyan);"></i>
+          <span id="calendar-employee-name-title">🗓️ كشف الحضور والغياب الشهري للموظف</span>
+        </h3>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-secondary" onclick="printEmployeeMonthlyAttendance()" style="font-size: 0.82rem; padding: 5px 12px; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);">
+            🖨️ طباعة الكشف
+          </button>
+          <span class="close" onclick="closeModal('employee-monthly-attendance-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <!-- Top Stats Banner -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px;">
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">أيام الحضور (✅)</span>
+            <strong id="calendar-stat-present" style="font-size: 1.25rem; color: var(--success);">0 أيام</strong>
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">أيام الغياب (❌)</span>
+            <strong id="calendar-stat-absent" style="font-size: 1.25rem; color: var(--danger);">0 أيام</strong>
+          </div>
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">مرات التأخير (⚠️)</span>
+            <strong id="calendar-stat-delays" style="font-size: 1.25rem; color: var(--warning);">0 مرات</strong>
+          </div>
+          <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">خصم الحضور/التأخير</span>
+            <strong id="calendar-stat-deduction" style="font-size: 1.25rem; color: var(--accent-cyan);">0 ج.م</strong>
+          </div>
+          <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">إجمالي السلف (💸)</span>
+            <strong id="calendar-stat-advances" style="font-size: 1.25rem; color: #c084fc;">0 ج.م</strong>
+          </div>
+          <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); padding: 10px 12px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">إجمالي الخصومات + السلف</span>
+            <strong id="calendar-stat-total-deductions" style="font-size: 1.25rem; color: #f87171;">0 ج.م</strong>
+          </div>
+        </div>
+
+        <!-- Advances Breakdown Container -->
+        <div id="advances-summary-container"></div>
+
+        <!-- Month Navigation & Controls Bar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; margin-top: 12px; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <strong style="color: var(--text-primary); font-size: 0.95rem;">اختر الشهر:</strong>
+            <input type="month" id="calendar-month-picker" class="form-control" style="width: 170px; padding: 4px 8px; font-size: 0.88rem;" onchange="renderEmployeeAttendanceCalendar()">
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-secondary);">
+            💡 اضغط على أي يوم للتعديل السريع (حاضر / غائب / تأخير وقت).
+          </div>
+        </div>
+
+        <!-- 30-Day Calendar Grid -->
+        <div id="attendance-calendar-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; max-height: 420px; overflow-y: auto; padding: 4px;">
+          <!-- Injected by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🧾 MODAL: SUPPLIER DETAILS / STATEMENT -->
+  <div id="supplier-statement-modal" class="modal">
+    <div class="modal-content" style="max-width: 1050px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="statement-supplier-title" style="margin: 0;">🧾 كشف الحساب التفصيلي</h3>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-success" onclick="printSupplierStatement(true)" style="padding: 6px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 6px; cursor: pointer; color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+            📥 تنزيل كملف PDF
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="printSupplierStatement(false)" style="padding: 6px 14px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; color: #fff; font-weight: 600;">
+            🖨️ طباعة
+          </button>
+          <span class="close" onclick="closeModal('supplier-statement-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <!-- Hero Net Balance Banner -->
+        <div id="statement-net-banner" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(14, 165, 233, 0.08)); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 15px 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+          <div>
+            <span style="font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 2px;">الرصيد الصافي المتبقي حالياً:</span>
+            <strong id="statement-net-balance" style="font-size: 1.6rem; color: var(--success); font-weight: 700;">0 ج.م</strong>
+            <span id="statement-net-status-badge" class="badge badge-income" style="margin-right: 8px; font-size: 0.8rem; vertical-align: middle;">مستحق له</span>
+          </div>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; text-align: center;">
+            <div style="background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">مشترياتنا منه (له)</span>
+              <strong id="statement-purchased" style="color: var(--warning); font-size: 1rem;">0 ج.م</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">مسدد له</span>
+              <strong id="statement-paid" style="color: var(--accent-cyan); font-size: 1rem;">0 ج.م</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">مبيعاتنا له (عليه)</span>
+              <strong id="statement-sold" style="color: var(--success); font-size: 1rem;">0 ج.م</strong>
+            </div>
+            <div style="background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">محصل منه</span>
+              <strong id="statement-collected" style="color: var(--text-primary); font-size: 1rem;">0 ج.م</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="statement-search-input" onkeyup="filterSupplierStatementTable()" placeholder="🔍 ابحث بالسيريال، الماركة أو البيان..." style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 12px; font-size: 0.85rem; width: 230px; outline: none;">
+            
+            <select id="statement-type-filter" onchange="filterSupplierStatementTable()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem;">
+              <option value="all">جميع المعاملات</option>
+              <option value="شراء">شراء بضاعة (له)</option>
+              <option value="دفع">سداد نقدي</option>
+              <option value="بيع">بيع تجاري (عليه)</option>
+              <option value="تحصيل">تحصيل نقدي</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 6px; align-items: center; background: rgba(255,255,255,0.03); padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 0.78rem; color: var(--text-secondary);">من:</span>
+              <input type="date" id="statement-date-from" onchange="filterSupplierStatementTable()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; font-size: 0.8rem; outline: none;">
+              
+              <span style="font-size: 0.78rem; color: var(--text-secondary);">إلى:</span>
+              <input type="date" id="statement-date-to" onchange="filterSupplierStatementTable()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; font-size: 0.8rem; outline: none;">
+              
+              <button type="button" class="btn btn-secondary" onclick="resetStatementDates()" title="إلغاء تصفية التواريخ" style="padding: 2px 7px; font-size: 0.75rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;">إلغاء</button>
+            </div>
+
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">الترتيب:</span>
+              <select id="statement-sort-order" onchange="renderCurrentSupplierStatement()" style="background: var(--bg-secondary); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 6px 10px; font-size: 0.85rem;">
+                <option value="desc" selected>الأحدث أولاً ⏱️</option>
+                <option value="asc">الأقدم أولاً (مع الرصيد التراكمي 📈)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive" style="max-height: 440px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <table class="table" id="statement-table" style="margin: 0;">
+             <thead>
+               <tr>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">#</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">التاريخ والوقت</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">نوع المعاملة</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); color: #f59e0b;">مشترياتنا منه</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); color: #10b981;">سدادنا له</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); color: #0ea5e9;">مبيعاتنا له</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4); color: #a855f7;">محصل منه</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">الرصيد التراكمي</th>
+                 <th style="position: sticky; top: 0; background-color: #172133; z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">البيان والتفاصيل</th>
+                 
+               </tr>
+             </thead>
+            <tbody>
+              <!-- Injected by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="statement-count-info" style="font-size: 0.85rem; color: var(--text-secondary);">إجمالي المعاملات: 0</span>
+        <button class="btn btn-secondary" onclick="closeModal('supplier-statement-modal')">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📥 MODAL: ADD DEVICE (BULK & DIVERSE SUPPORT) -->
+  <div id="add-device-modal" class="modal">
+    <div class="modal-content" style="max-width: 850px;">
+      <div class="modal-header">
+        <h3>📥 إدخال أجهزة جديدة للمخزن (إذن استلام)</h3>
+        <span class="close" onclick="closeModal('add-device-modal')">&times;</span>
+      </div>
+      <form id="add-device-form">
+        <!-- TOP SECTION: Supplier and Document Info -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+          <!-- Right side: Supplier & Document -->
+          <div>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label style="font-weight:600;">المورد:</label>
+              <select id="dev-supplier-select" class="form-control" required>
+                <!-- Injected dynamically -->
+              </select>
+              <input type="text" id="dev-supplier-new" class="form-control hidden" placeholder="اكتب اسم المورد الجديد" style="margin-top: 8px;">
+              <div class="form-group hidden" id="dev-supplier-custom-name-group" style="margin-top: 8px; margin-bottom: 0;">
+                <label style="font-size: 0.85rem; font-weight:600;">اسم التاجر/المورد الفعلي (اختياري):</label>
+                <input type="text" id="dev-supplier-custom-name" class="form-control" placeholder="مثال: رامز" style="padding: 4px 8px; height: 34px;">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 10px;">
+              <label style="color: var(--accent-cyan); font-weight:600; display: flex; align-items: center; gap: 6px;">
+                <i class='bx bx-calendar-event'></i>
+                <span>📅 تاريخ إذن الاستلام (اختياري - افتراضي: اليوم):</span>
+              </label>
+              <input type="date" id="dev-custom-date" class="form-control" style="font-size: 0.88rem;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="color: var(--accent); display: flex; align-items: center; gap: 6px; font-weight:600;">
+                <i class='bx bx-import'></i>
+                <span>إرفاق إذن استلام الأجهزة (اختياري):</span>
+              </label>
+              <input type="file" id="dev-receive-note" class="form-control" accept="image/*">
+            </div>
+          </div>
+          
+          <!-- Left side: Financial / Payment details (Matches Sale modal style) -->
+          <div style="border-left: 1px solid rgba(255,255,255,0.08); padding-left: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="font-weight: 600; color: var(--text-secondary);">إجمالي تكلفة الإذن:</span>
+              <span id="dev-bulk-total-badge" style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">0 ج.م</span>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-weight:600; margin-bottom: 4px;">المبلغ المدفوع الآن للمورد (ج.م):</label>
+                <button type="button" class="btn btn-secondary btn-table" style="font-size: 0.75rem; padding: 2px 6px; background: rgba(46,204,113,0.1); color: var(--success); border-color: rgba(46,204,113,0.2);" onclick="payFullBulkAmount()">💵 دفع كامل المبلغ</button>
+              </div>
+              <input type="number" id="dev-cash-amount" class="form-control" value="0" min="0" placeholder="مثال: 0 لو آجل، أو المبلغ المدفوع">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-weight:600; margin-bottom: 4px;">💳 طريقة دفع المبلغ (إذا تم الدفع):</label>
+              <select id="dev-payment-method" class="form-control">
+                <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+                <option value="فودافون كاش">📱 فودافون كاش</option>
+                <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+                <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+                <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+                <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- DYNAMIC DEVICES GRID -->
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="margin: 0; font-size: 1.05rem; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+              <i class='bx bx-list-ul' style="color: var(--accent); font-size: 1.3rem;"></i>
+              <span>الأجهزة المشمولة في هذا الإذن</span>
+            </h4>
+            <button type="button" class="btn btn-secondary btn-table" style="background: rgba(14,165,233,0.15); border-color: rgba(14,165,233,0.4); color: var(--accent-cyan);" onclick="addBulkDeviceRow()">
+              ➕ إضافة جهاز آخر للقائمة
+            </button>
+          </div>
+          
+          <div style="overflow-x: auto; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); max-height: 280px; overflow-y: auto;">
+            <table class="table" style="margin: 0; min-width: 850px;">
+              <thead>
+                  <th style="width: 26%; font-size: 0.85rem; padding: 10px 10px;">ماركة وموديل التكييف</th>
+                  <th style="width: 16%; font-size: 0.85rem; padding: 10px 10px;">القدرة</th>
+                  <th style="width: 22%; font-size: 0.85rem; padding: 10px 10px;">🧊 سيريال الفانة (داخلي)</th>
+                  <th style="width: 22%; font-size: 0.85rem; padding: 10px 10px;">🔥 سيريال الكباس (خارجي)</th>
+                  <th style="width: 10%; font-size: 0.85rem; padding: 10px 10px;">التكلفة</th>
+                  <th style="width: 4%; text-align: center; padding: 10px 10px;"></th>
+              </thead>
+              <tbody id="bulk-devices-tbody">
+                <!-- Added dynamically by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-device-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="add-device-submit-btn">💾 حفظ كل الأجهزة في المخزن</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- 📤 MODAL: DISPATCH / SELL DEVICE -->
+  <div id="dispatch-device-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📤 صرف وتوزيع الجهاز من المخزن</h3>
+        <span class="close" onclick="closeModal('dispatch-device-modal')">&times;</span>
+      </div>
+      <form id="dispatch-device-form">
+        <input type="hidden" id="dispatch-device-id">
+        
+        <!-- 🛒 CART-BASED DEVICE SELECTION -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 14px; margin-bottom: 18px;">
+          <h4 style="margin: 0 0 12px 0; color: var(--accent-cyan); font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <span>📦</span>
+              <span>اختيار الأجهزة المراد صرفها من المخزن:</span>
+            </span>
+            <span id="dispatch-total-available-badge" style="font-size: 0.78rem; font-weight: normal; color: var(--text-secondary);"></span>
+          </h4>
+
+          <!-- Step 1: Device Model & Capacity Picker -->
+          <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <!-- Brand Selection -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">نوع / ماركة الجهاز:</label>
+                <select id="dispatch-picker-brand" class="form-control" onchange="onDispatchPickerBrandChange()" style="font-size: 0.85rem;">
+                  <option value="">-- اختر نوع الجهاز --</option>
+                </select>
+              </div>
+
+              <!-- Capacity Selection -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">القدرة:</label>
+                <select id="dispatch-picker-capacity" class="form-control" onchange="onDispatchPickerCapacityChange()" style="font-size: 0.85rem;" disabled>
+                  <option value="">-- اختر القدرة --</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Stock Availability & Quantity / Serials -->
+            <div id="dispatch-picker-details" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255, 255, 255, 0.1);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                <div id="dispatch-picker-stock-info" style="font-size: 0.85rem; color: #10b981; font-weight: 600;">
+                  <!-- Live Stock count -->
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <label style="font-size: 0.82rem; margin: 0; color: var(--text-secondary);">العدد المطلوب:</label>
+                  <input type="number" id="dispatch-picker-qty" min="1" max="1" value="1" style="width: 65px; padding: 4px 6px; font-size: 0.85rem; border-radius: 4px; text-align: center; background: rgba(0,0,0,0.3);" class="form-control" oninput="onDispatchPickerQtyChange()">
+                </div>
+              </div>
+
+              <!-- Available Serials Picker: Separate Fans & Compressors Lists -->
+              <div style="margin-bottom: 12px;">
+                <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px;">
+                  اختر الفانة والكباس المراد صرفهما (يمكنك تعليم أي فانة مع أي كباس بحرية):
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <!-- Fans Column -->
+                  <div style="background: rgba(14, 165, 233, 0.05); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 8px; padding: 8px; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 4px;">
+                        <span>🧊</span>
+                        <span>سيريالات الفانات:</span>
+                      </span>
+                      <span id="dispatch-fans-selected-count" style="font-size: 0.7rem; color: var(--accent-cyan); font-weight: 600;">(محدد: 1)</span>
+                    </div>
+                    <div id="dispatch-picker-fans-list" style="display: flex; flex-direction: column; gap: 5px; max-height: 150px; overflow-y: auto; padding: 2px;">
+                      <!-- Fan items -->
+                    </div>
+                  </div>
+
+                  <!-- Compressors Column -->
+                  <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 8px; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <span style="font-size: 0.8rem; font-weight: 700; color: #f59e0b; display: flex; align-items: center; gap: 4px;">
+                        <span>🔥</span>
+                        <span>سيريالات الكباسات:</span>
+                      </span>
+                      <span id="dispatch-comps-selected-count" style="font-size: 0.7rem; color: #f59e0b; font-weight: 600;">(محدد: 1)</span>
+                    </div>
+                    <div id="dispatch-picker-comps-list" style="display: flex; flex-direction: column; gap: 5px; max-height: 150px; overflow-y: auto; padding: 2px;">
+                      <!-- Compressor items -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button type="button" class="btn btn-primary" onclick="addSelectedDevicesToDispatchCart()" style="width: 100%; font-size: 0.85rem; padding: 8px 12px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <span>➕ إضافة هذا الجهاز إلى سلة الصرف</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Selected Devices Cart -->
+          <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="font-size: 0.88rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px;">
+                <span>🛒</span>
+                <span>سلة الأجهزة المختارة للصرف:</span>
+                <span id="dispatch-cart-total-badge" class="badge" style="background: var(--accent); color: #fff; font-size: 0.75rem; padding: 2px 7px; border-radius: 10px;">0 جهاز</span>
+              </div>
+              <button type="button" id="dispatch-clear-cart-btn" class="btn btn-secondary btn-table" onclick="clearDispatchCart()" style="font-size: 0.75rem; padding: 2px 8px; display: none;">🗑️ تفريغ السلة</button>
+            </div>
+
+            <!-- Cart Items Container -->
+            <div id="dispatch-cart-items-container">
+              <div id="dispatch-cart-empty-msg" style="text-align: center; padding: 14px; color: var(--text-secondary); font-size: 0.82rem; border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 6px; background: rgba(0,0,0,0.1);">
+                ⚠️ لم تقم بإضافة أي أجهزة إلى السلة بعد.<br>
+                <span style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.4);">اختر نوع الجهاز والقدرة والعدد من الأعلى ثم اضغط "إضافة هذا الجهاز إلى سلة الصرف".</span>
+              </div>
+              <div id="dispatch-cart-table-wrapper" class="hidden" style="max-height: 200px; overflow-y: auto; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;">
+                <table class="table" style="margin-bottom: 0; font-size: 0.82rem; width: 100%;">
+                  <thead>
+                    <tr style="background: rgba(255, 255, 255, 0.05); text-align: right;">
+                      <th style="width: 25px; padding: 6px 8px;">#</th>
+                      <th style="padding: 6px 8px;">نوع الجهاز والقدرة</th>
+                      <th style="padding: 6px 8px;">السيريال (فانة / كباس)</th>
+                      <th style="width: 45px; text-align: center; padding: 6px 8px;">حذف</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dispatch-cart-table-body">
+                    <!-- Dynamic cart rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label style="font-weight: 600; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-calendar-event'></i>
+            <span>📅 تاريخ عملية الصرف والبيع (اختياري - افتراضي: اليوم):</span>
+          </label>
+          <input type="date" id="dispatch-custom-date" class="form-control" style="font-size: 0.88rem;">
+        </div>
+
+        <div class="form-group">
+          <label>نوع الصرف/العملية:</label>
+          <select id="dispatch-action-type" class="form-control" onchange="toggleDispatchInputs()" required>
+            <option value="">-- اختر العملية --</option>
+            <option value="trader">🤝 بيع لتاجر/مورد (سعر تجاري)</option>
+            <option value="customer">👤 بيع مباشر لعميل (سداد كامل القيمة)</option>
+          </select>
+          <div id="dispatch-type-help" class="hidden" style="margin-top: 10px; padding: 10px; background: rgba(52, 152, 219, 0.05); border: 1px dashed rgba(52, 152, 219, 0.2); border-radius: 6px; font-size: 0.85rem; color: var(--text-primary); line-height: 1.4;"></div>
+        </div>
+
+
+
+        <!-- Inputs for Trader Sale -->
+        <div id="dispatch-trader-section" class="dispatch-section hidden">
+          <div class="form-group">
+            <label>اختر التاجر/المورد:</label>
+            <select id="dispatch-trader-select" class="form-control">
+              <!-- Options loaded dynamically -->
+            </select>
+          </div>
+          <div class="form-group hidden" id="dispatch-trader-name-group">
+            <label>اسم التاجر الفعلي (اختياري):</label>
+            <input type="text" id="dispatch-trader-name-custom" class="form-control" placeholder="مثال: رامز">
+          </div>
+          <div class="form-group">
+            <label>سعر البيع للتاجر (ج.م):</label>
+            <input type="number" id="dispatch-trader-price" class="form-control" placeholder="أدخل السعر">
+          </div>
+          <div class="form-group">
+            <label>المبلغ المحصل الآن (ج.م):</label>
+            <input type="number" id="dispatch-trader-paid" class="form-control" placeholder="مثال: 0 لو آجل، أو المبلغ المدفوع">
+          </div>
+          <div class="form-group">
+            <label>💳 طريقة استلام المبلغ:</label>
+            <select id="dispatch-trader-payment-method" class="form-control">
+              <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+              <option value="فودافون كاش">📱 فودافون كاش</option>
+              <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+              <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+              <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+              <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+            </select>
+          </div>
+          <!-- Split Payment Row (optional) -->
+          <div style="margin-top: 6px;">
+            <button type="button" class="btn btn-secondary" style="font-size:0.82rem; padding:5px 12px;" onclick="toggleSplitPayment('trader')">➕ إضافة دفعة ثانية بطريقة مختلفة</button>
+          </div>
+          <div id="dispatch-trader-split-section" class="hidden" style="margin-top:10px; border:1px dashed rgba(255,255,255,0.2); border-radius:8px; padding:12px; background:rgba(255,255,255,0.03);">
+            <label style="color:var(--accent); font-weight:600;">🔀 الدفعة الثانية:</label>
+            <div class="form-group" style="margin-top:8px;">
+              <label>المبلغ (ج.م):</label>
+              <input type="number" id="dispatch-trader-paid2" class="form-control" placeholder="مثال: 13250">
+            </div>
+            <div class="form-group">
+              <label>طريقة استلام الدفعة الثانية:</label>
+              <select id="dispatch-trader-payment-method2" class="form-control">
+                <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+                <option value="فودافون كاش">📱 فودافون كاش</option>
+                <option value="إنستا باي" selected>⚡ إنستا باي (شخصي لوالدي)</option>
+                <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+                <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+                <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inputs for Customer Sale -->
+        <div id="dispatch-customer-section" class="dispatch-section hidden">
+          <div class="form-group autocomplete-container">
+            <label>اسم العميل بالكامل:</label>
+            <input type="text" id="dispatch-customer-name" class="form-control" placeholder="أدخل اسم العميل" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>رقم الموبايل:</label>
+            <input type="text" id="dispatch-customer-phone" class="form-control" placeholder="مثال: 0100...">
+          </div>
+          <div class="form-group">
+            <label>العنوان بالتفصيل:</label>
+            <input type="text" id="dispatch-customer-address" class="form-control" placeholder="أدخل العنوان بالتفصيل">
+          </div>
+          <div class="form-group">
+            <label>سعر البيع للعميل (ج.م):</label>
+            <input type="number" id="dispatch-customer-price" class="form-control" placeholder="أدخل سعر البيع">
+          </div>
+          <div class="form-group">
+            <label>المبلغ المدفوع الآن (المقدم/الدفعة الأولى) (ج.م):</label>
+            <input type="number" id="dispatch-customer-paid" class="form-control" placeholder="أدخل المبلغ المدفوع حالياً (أو اكتب نفس السعر للدفع بالكامل)">
+          </div>
+
+          <div class="form-group">
+            <label>💳 طريقة استلام المبلغ:</label>
+            <select id="dispatch-customer-payment-method" class="form-control">
+              <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+              <option value="فودافون كاش">📱 فودافون كاش</option>
+              <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+              <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+              <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+              <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+            </select>
+          </div>
+          <!-- Split Payment Row (optional) -->
+          <div style="margin-top: 6px;">
+            <button type="button" class="btn btn-secondary" style="font-size:0.82rem; padding:5px 12px;" onclick="toggleSplitPayment('customer')">➕ إضافة دفعة ثانية بطريقة مختلفة</button>
+          </div>
+          <div id="dispatch-customer-split-section" class="hidden" style="margin-top:10px; border:1px dashed rgba(255,255,255,0.2); border-radius:8px; padding:12px; background:rgba(255,255,255,0.03);">
+            <label style="color:var(--accent); font-weight:600;">🔀 الدفعة الثانية:</label>
+            <div class="form-group" style="margin-top:8px;">
+              <label>المبلغ (ج.م):</label>
+              <input type="number" id="dispatch-customer-paid2" class="form-control" placeholder="مثال: 13250">
+            </div>
+            <div class="form-group">
+              <label>طريقة استلام الدفعة الثانية:</label>
+              <select id="dispatch-customer-payment-method2" class="form-control">
+                <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+                <option value="فودافون كاش">📱 فودافون كاش</option>
+                <option value="إنستا باي" selected>⚡ إنستا باي (شخصي لوالدي)</option>
+                <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+                <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+                <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Installment Details Section (Optional) -->
+          <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+            <label style="color:var(--warning); font-weight:600; display:flex; align-items:center; gap:6px;">
+              <i class='bx bx-calendar-check'></i>
+              <span>تفاصيل قسط العميل (اختياري في حال وجود متبقي):</span>
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+              <div class="form-group">
+                <label>قيمة القسط الشهري (ج.م):</label>
+                <input type="number" id="dispatch-customer-installment-monthly" class="form-control" placeholder="مثال: 5175">
+              </div>
+              <div class="form-group">
+                <label>عدد شهور التقسيط:</label>
+                <input type="number" id="dispatch-customer-installment-months" class="form-control" placeholder="مثال: 3">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>ملاحظات وجدولة التقسيط:</label>
+              <input type="text" id="dispatch-customer-installment-notes" class="form-control" placeholder="مثال: 5175 ج كل شهر لمدة 3 شهور">
+            </div>
+          </div>
+        </div>
+
+        <!-- Common Delivery/Installation Team Section -->
+        <div id="dispatch-team-section" class="hidden" style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 15px;">
+          <h4 style="margin-top: 0; margin-bottom: 10px; color: var(--accent); display: flex; align-items: center; gap: 6px; font-size: 0.95rem;">
+            🚛 فريق التوصيل والتركيب:
+          </h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>🔧 الفني المسؤول الأول (اختياري):</label>
+              <select id="dispatch-technician-select" class="form-control">
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>🔧 الفني المسؤول الثاني (اختياري):</label>
+              <select id="dispatch-technician2-select" class="form-control">
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>🚚 السائق المسؤول (اختياري):</label>
+              <select id="dispatch-driver-select" class="form-control">
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>🤝 المساعد (اختياري):</label>
+              <select id="dispatch-assistant-select" class="form-control">
+                <!-- Loaded dynamically -->
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dispatch Documents Upload -->
+        <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <h4 style="color: var(--accent); margin-bottom: 10px; font-weight: 600;">📑 إرفاق مستندات البيع والتركيب (اختياري):</h4>
+          
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <i class='bx bx-file'></i>
+              <span>محضر التركيب:</span>
+            </label>
+            <input type="file" id="dispatch-installation-report" class="form-control" accept="image/*">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <i class='bx bx-paste'></i>
+              <span>عقد البيع:</span>
+            </label>
+            <input type="file" id="dispatch-sales-contract" class="form-control" accept="image/*">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <i class='bx bx-calculator'></i>
+              <span>الفاتورة الضريبية:</span>
+            </label>
+            <input type="file" id="dispatch-tax-invoice" class="form-control" accept="image/*">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <i class='bx bx-package'></i>
+              <span>إذن صرف مخزن (Delivery Note):</span>
+            </label>
+            <input type="file" id="dispatch-delivery-note" class="form-control" accept="image/*">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('dispatch-device-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ وتنفيذ الصرف</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL: MANUAL SERIAL EDIT (FAN & COMPRESSOR) -->
+  <div id="serial-swap-modal" class="modal" style="z-index: 1000005 !important;">
+    <div class="modal-content" style="max-width: 480px; border: 1px solid rgba(14, 165, 233, 0.3); box-shadow: 0 25px 60px rgba(0,0,0,0.6);">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">✏️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; color: var(--accent-cyan);">تعديل سيريالات الجهاز (فانة / كباس)</h3>
+            <span style="font-size: 0.76rem; color: var(--text-secondary);">تعديل يدوي مباشر لسيريال الفانة الداخلية أو الكباس الخارجي</span>
+          </div>
+        </div>
+        <span class="close" onclick="closeModal('serial-swap-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+      </div>
+
+      <div class="modal-body" style="padding: 16px 20px;">
+        <input type="hidden" id="swap-device-id">
+
+        <!-- Current Device Info Banner -->
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px;">
+          <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 2px;">الجهاز المحدد حالياً:</div>
+          <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;" id="swap-modal-device-name">-</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.82rem;">
+            <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 6px; padding: 6px 10px;">
+              <span style="font-size: 0.7rem; color: var(--accent-cyan); display: block; font-weight: 600;">🧊 سيريال الفانة الحالي:</span>
+              <code id="swap-modal-current-indoor" style="color: #fff; font-size: 0.88rem; font-weight: 700;">-</code>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 6px; padding: 6px 10px;">
+              <span style="font-size: 0.7rem; color: #f59e0b; display: block; font-weight: 600;">🔥 سيريال الكباس الحالي:</span>
+              <code id="swap-modal-current-outdoor" style="color: #f59e0b; font-size: 0.88rem; font-weight: 700;">-</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Edit Inputs -->
+        <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label style="font-size: 0.82rem; margin-bottom: 5px; color: var(--accent-cyan); font-weight: 600;">
+              🧊 سيريال الفانة (Indoor Serial):
+            </label>
+            <input type="text" id="swap-modal-manual-indoor" class="form-control" style="font-size: 0.88rem; font-family: monospace;" placeholder="أدخل سيريال الفانة">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.82rem; margin-bottom: 5px; color: #f59e0b; font-weight: 600;">
+              🔥 سيريال الكباس (Outdoor Serial):
+            </label>
+            <input type="text" id="swap-modal-manual-outdoor" class="form-control" style="font-size: 0.88rem; font-family: monospace;" placeholder="أدخل سيريال الكباس الفعلي">
+          </div>
+        </div>
+
+        <button type="button" id="btn-confirm-manual-swap" class="btn btn-primary" onclick="confirmManualSerialUpdate()" style="width: 100%; font-size: 0.9rem; padding: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>💾 حفظ التعديل للسيريالات</span>
+        </button>
+      </div>
+
+      <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 10px 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('serial-swap-modal')">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL: EDIT / DELETE DEVICE -->
+  <div id="edit-device-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ تعديل بيانات الجهاز</h3>
+        <span class="close" onclick="closeModal('edit-device-modal')">&times;</span>
+      </div>
+      <form id="edit-device-form">
+        <input type="hidden" id="edit-device-id">
+        <!-- 📦 BATCH DEVICES SELECTOR BAR -->
+        <div id="edit-dev-batch-container" class="hidden" style="margin-bottom: 18px; padding: 12px; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <div style="font-weight: 700; color: #c084fc; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+              <span>📦</span>
+              <span id="edit-dev-batch-title">أجهزة الإذن المجمع</span>
+            </div>
+            <span style="font-size: 0.78rem; color: var(--text-secondary);">اختر الجهاز لتعديل بياناته</span>
+          </div>
+          <div id="edit-dev-batch-tabs" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <!-- Dynamic device tabs -->
+          </div>
+        </div>
+        <div class="form-group">
+          <label>ماركة التكييف:</label>
+          <select id="edit-dev-brand" class="form-control" required>
+            <option value="" disabled selected>-- اختر الماركة والموديل --</option>
+            <optgroup label="كاريير (Carrier)">
+              <option value="كاريير بارد عادي">كاريير بارد عادي</option>
+              <option value="كاريير بارد انفرتر">كاريير بارد انفرتر</option>
+              <option value="كاريير بارد ساخن عادي">كاريير بارد ساخن عادي</option>
+              <option value="كاريير بارد ساخن انفرتر">كاريير بارد ساخن انفرتر</option>
+              <option value="كاريير كونسيلد">كاريير كونسيلد</option>
+            </optgroup>
+            <optgroup label="ميديا (Midea)">
+              <option value="ميديا بارد عادي">ميديا بارد عادي</option>
+              <option value="ميديا بارد انفرتر">ميديا بارد انفرتر</option>
+              <option value="ميديا بارد ساخن عادي">ميديا بارد ساخن عادي</option>
+              <option value="ميديا بارد ساخن انفرتر">ميديا بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="شارب (Sharp)">
+              <option value="شارب بارد عادي">شارب بارد عادي</option>
+              <option value="شارب بارد انفرتر">شارب بارد انفرتر</option>
+              <option value="شارب بارد ساخن عادي">شارب بارد ساخن عادي</option>
+              <option value="شارب بارد ساخن انفرتر">شارب بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="تورنيدو (Tornado)">
+              <option value="تورنيدو بارد عادي">تورنيدو بارد عادي</option>
+              <option value="تورنيدو بارد انفرتر">تورنيدو بارد انفرتر</option>
+              <option value="تورنيدو بارد ساخن عادي">تورنيدو بارد ساخن عادي</option>
+              <option value="تورنيدو بارد ساخن انفرتر">تورنيدو بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="ال جي (LG)">
+              <option value="ال جي بارد عادي">ال جي بارد عادي</option>
+              <option value="ال جي بارد انفرتر">ال جي بارد انفرتر</option>
+              <option value="ال جي بارد ساخن عادي">ال جي بارد ساخن عادي</option>
+              <option value="ال جي بارد ساخن انفرتر">ال جي بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="فريش (Fresh)">
+              <option value="فريش بارد عادي">فريش بارد عادي</option>
+              <option value="فريش بارد انفرتر">فريش بارد انفرتر</option>
+              <option value="فريش بارد ساخن عادي">فريش بارد ساخن عادي</option>
+              <option value="فريش بارد ساخن انفرتر">فريش بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="هاير (Haier)">
+              <option value="هاير بارد عادي">هاير بارد عادي</option>
+              <option value="هاير بارد انفرتر">هاير بارد انفرتر</option>
+              <option value="هاير بارد ساخن عادي">هاير بارد ساخن عادي</option>
+              <option value="هاير بارد ساخن انفرتر">هاير بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="جري (Gree)">
+              <option value="جري بارد عادي">جري بارد عادي</option>
+              <option value="جري بارد انفرتر">جري بارد انفرتر</option>
+              <option value="جري بارد ساخن عادي">جري بارد ساخن عادي</option>
+              <option value="جري بارد ساخن انفرتر">جري بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="سامسونج (Samsung)">
+              <option value="سامسونج بارد عادي">سامسونج بارد عادي</option>
+              <option value="سامسونج بارد انفرتر">سامسونج بارد انفرتر</option>
+              <option value="سامسونج بارد ساخن عادي">سامسونج بارد ساخن عادي</option>
+              <option value="سامسونج بارد ساخن انفرتر">سامسونج بارد ساخن انفرتر</option>
+            </optgroup>
+            <optgroup label="يونيون اير (Unionaire)">
+              <option value="يونيون اير بارد عادي">يونيون اير بارد عادي</option>
+              <option value="يونيون اير بارد انفرتر">يونيون اير بارد انفرتر</option>
+              <option value="يونيون اير بارد ساخن عادي">يونيون اير بارد ساخن عادي</option>
+              <option value="يونيون اير بارد ساخن انفرتر">يونيون اير بارد ساخن انفرتر</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>القدرة بالحصان:</label>
+          <select id="edit-dev-capacity" class="form-control" required>
+            <option value="" disabled selected>-- اختر القدرة --</option>
+            <option value="1.5-حصان">1.5-حصان</option>
+            <option value="2.25-حصان">2.25-حصان</option>
+            <option value="3-حصان">3-حصان</option>
+            <option value="4-حصان">4-حصان</option>
+            <option value="5-حصان">5-حصان</option>
+            <option value="6-حصان">6-حصان</option>
+            <option value="7.5-حصان">7.5-حصان</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>سيريال الفانة / الوحدة الداخلية (Indoor Serial):</label>
+          <input type="text" id="edit-dev-serial" class="form-control" required>
+          <div id="edit-dev-serial-conflict" class="hidden" style="margin-top: 6px; padding: 8px 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.82rem; line-height: 1.4;"></div>
+        </div>
+        <div class="form-group">
+          <label>سيريال الكباس / الوحدة الخارجية (Outdoor Serial):</label>
+          <input type="text" id="edit-dev-outdoor-serial" class="form-control" placeholder="اختياري أو أدخل سيريال الكباس">
+          <div id="edit-dev-outdoor-serial-conflict" class="hidden" style="margin-top: 6px; padding: 8px 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; color: #fca5a5; font-size: 0.82rem; line-height: 1.4;"></div>
+        </div>
+        <div class="form-group">
+          <label>تكلفة الشراء (ج.م):</label>
+          <input type="number" id="edit-dev-cost" class="form-control" required min="0">
+        </div>
+
+        <!-- 👤 CUSTOMER DETAILS SECTION -->
+        <div id="edit-dev-customer-section" style="border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 20px; background: rgba(168, 85, 247, 0.04);">
+          <label style="color:#c084fc; font-weight:600; display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+            <i class='bx bx-user-pin' style="font-size: 1.1rem;"></i>
+            <span>👤 بيانات العميل المستلم:</span>
+          </label>
+          <div class="form-group autocomplete-container" style="position: relative; margin-bottom: 12px;">
+            <label>اسم العميل:</label>
+            <input type="text" id="edit-dev-customer-name" class="form-control" placeholder="أدخل اسم العميل أو اختر من القائمة" autocomplete="off">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>رقم هاتف العميل:</label>
+              <input type="text" id="edit-dev-customer-phone" class="form-control" placeholder="مثال: 0100...">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>عنوان العميل بالتفصيل:</label>
+              <input type="text" id="edit-dev-customer-address" class="form-control" placeholder="أدخل العنوان بالتفصيل">
+            </div>
+          </div>
+          <div id="edit-dev-customer-batch-note" class="hidden" style="margin-top: 10px; padding: 8px 12px; background: rgba(168, 85, 247, 0.12); border-radius: 6px; font-size: 0.8rem; color: #d8b4fe; line-height: 1.4;">
+            📦 <strong>مزامنة الإذن المجمع:</strong> هذا الجهاز يتبع إذن مجمع؛ أي تعديل في اسم أو هاتف أو عنوان العميل هنا سيتم تطبيقه وتحديثه تلقائياً على كافة أجهزة هذا الإذن المجمع!
+          </div>
+        </div>
+
+        <div class="form-group" id="edit-dev-sale-group">
+          <label id="edit-dev-sale-label">سعر البيع (ج.م):</label>
+          <input type="number" id="edit-dev-sale" class="form-control" min="0">
+        </div>
+        <div class="form-group" id="edit-dev-paid-customer-group">
+          <label id="edit-dev-paid-label">المبلغ المدفوع من السعر (ج.م):</label>
+          <input type="number" id="edit-dev-paid" class="form-control" min="0">
+        </div>
+        
+        <!-- Installment Details Section (Optional) -->
+        <div id="edit-dev-installment-section" style="border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02);">
+          <label style="color:var(--warning); font-weight:600; display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+            <i class='bx bx-calendar-check'></i>
+            <span>تفاصيل جدولة أقساط العميل:</span>
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label>القسط الشهري (ج.م):</label>
+              <input type="number" id="edit-dev-installment-monthly" class="form-control" placeholder="مثال: 5175">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label>عدد الشهور:</label>
+              <input type="number" id="edit-dev-installment-months" class="form-control" placeholder="مثال: 3">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:10px; margin-bottom:0;">
+            <label>ملاحظات التقسيط:</label>
+            <input type="text" id="edit-dev-installment-notes" class="form-control" placeholder="مثال: 5175ج كل شهر لمدة 3 شهور">
+          </div>
+        </div>
+        
+        <!-- Linked Cash Flow Transaction Controls -->
+        <input type="hidden" id="edit-dev-cashflow-id">
+        <div class="form-group hidden" id="edit-dev-payment-method-group">
+          <label>طريقة تحصيل دفعة البيع:</label>
+          <select id="edit-dev-payment-method-customer" class="form-control">
+            <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+            <option value="فودافون كاش">📱 فودافون كاش</option>
+            <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+            <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+            <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+          </select>
+          <small class="form-text text-muted" id="edit-dev-payment-method-help" style="color: var(--accent); margin-top: 6px; display: block; font-size: 0.78rem; line-height: 1.4;"></small>
+        </div>
+        <!-- 📅 EDIT TRANSACTION DATES -->
+        <div style="border: 1px solid rgba(14, 165, 233, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 20px; background: rgba(14, 165, 233, 0.04);">
+          <label style="color:var(--accent-cyan); font-weight:600; display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+            <i class='bx bx-calendar-edit' style="font-size: 1.1rem;"></i>
+            <span>📅 تعديل تاريخ المعاملات (استلام / صرف):</span>
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="font-size: 0.82rem; font-weight:600;">📥 تاريخ الاستلام (الإدخال):</label>
+              <input type="date" id="edit-dev-created-at" class="form-control" style="font-size: 0.85rem;">
+            </div>
+            <div class="form-group" style="margin-bottom:0;" id="edit-dev-dispatch-date-group">
+              <label style="font-size: 0.82rem; font-weight:600;">📤 تاريخ الصرف/البيع:</label>
+              <input type="date" id="edit-dev-installed-at" class="form-control" style="font-size: 0.85rem;">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>حالة الجهاز:</label>
+          <select id="edit-dev-status" class="form-control" onchange="updateEditDeviceModalFields()" required disabled>
+            <option value="متاح">متاح</option>
+            <option value="جاري التركيب عهدة مع الفني">جاري التركيب عهدة مع الفني</option>
+            <option value="تم التركيب">تم التركيب (عميل مباشر)</option>
+            <option value="صرف لتاجر">صرف لتاجر</option>
+          </select>
+          <small class="form-text text-muted" style="color: rgba(255,255,255,0.6); margin-top: 6px; display: block; font-size: 0.78rem; line-height: 1.4;">
+            ⚠️ لا يمكن تعديل حالة الجهاز من هنا مباشرة للحفاظ على سلامة الحسابات والقيود المالية للموردين والعملاء. لتغيير الحالة، يرجى استخدام أزرار <strong>📤 صرف/بيع</strong> أو <strong>⏪ استرداد</strong> من شاشة التحكم الرئيسية.
+          </small>
+        </div>
+        <!-- Installation/Delivery Team Details (Editable) -->
+        <div id="edit-dev-team-section" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <h4 style="margin-top: 0; margin-bottom: 10px; color: var(--accent); font-size: 0.9rem;">🚛 فريق التوصيل والتركيب:</h4>
+          <div class="form-group">
+            <label>🔧 الفني المسؤول:</label>
+            <select id="edit-dev-technician" class="form-control">
+              <option value="">-- غير محدد --</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>🚛 السائق:</label>
+            <select id="edit-dev-driver" class="form-control">
+              <option value="">-- غير محدد --</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>👤 المساعد:</label>
+            <select id="edit-dev-assistant" class="form-control">
+              <option value="">-- غير محدد --</option>
+              <!-- Loaded dynamically -->
+            </select>
+          </div>
+        </div>
+        <!-- Retroactive Cash Payment Option -->
+        <div class="form-group" style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.05);" id="edit-dev-cash-section">
+          <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; color: var(--success);">
+            <input type="checkbox" id="edit-dev-is-cash" onchange="const g = document.getElementById('edit-dev-paid-group'); g.classList.toggle('hidden', !this.checked); if(this.checked) document.getElementById('edit-dev-cash-amount').value = document.getElementById('edit-dev-cost').value;" style="width: auto;">
+            ⚡ تسجيل سداد قيمة هذا الجهاز كاش الآن للمورد
+          </label>
+        </div>
+        <div class="form-group hidden" id="edit-dev-paid-group">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label>المبلغ المدفوع (ج.م):</label>
+              <input type="number" id="edit-dev-cash-amount" class="form-control" placeholder="أدخل المبلغ">
+            </div>
+            <div>
+              <label>طريقة الدفع:</label>
+              <select id="edit-dev-payment-method" class="form-control">
+                <option value="خزنة">💵 كاش ← خزنة الشركة</option>
+                <option value="فودافون كاش">📱 فودافون كاش</option>
+                <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+                <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+                <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+                <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('edit-device-modal')">إلغاء</button>
+          <button type="button" class="btn btn-danger" onclick="deleteDeviceAction()">⚠️ حذف الجهاز نهائياً</button>
+          <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 🤝 MODAL: ADD SUPPLIER -->
+  <div id="add-supplier-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>➕ إضافة مورد/تاجر جديد</h3>
+        <span class="close" onclick="closeModal('add-supplier-modal')">&times;</span>
+      </div>
+      <form id="add-supplier-form">
+        <div class="form-group">
+          <label>اسم المورد/التاجر:</label>
+          <input type="text" id="new-supplier-name" class="form-control" placeholder="اكتب الاسم هنا" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-supplier-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">إضافة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 🤝 MODAL: ADD SUPPLIER TRANSACTION -->
+  <div id="add-supplier-tx-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>➕ تسجيل فاتورة / حركة حساب للمورد</h3>
+        <span class="close" onclick="closeModal('add-supplier-tx-modal')">&times;</span>
+      </div>
+      <form id="add-supplier-tx-form">
+        <input type="hidden" id="tx-supplier-id">
+        <div class="form-group">
+          <label>المورد/التاجر:</label>
+          <input type="text" id="tx-supplier-name" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label>نوع المعاملة:</label>
+          <select id="tx-type" class="form-control" onchange="updateTxTypeHelp()" required>
+            <option value="">-- اختر نوع المعاملة --</option>
+            <option value="دفع">📤 دفع مالي له (سداد دفعة حساب للمورد)</option>
+            <option value="تحصيل">📥 تحصيل مالي منه (دفعة حساب لنا من التاجر)</option>
+            <option value="ريبيت">🎁 تسوية ريبيت / خصم ممنوح (دفترياً)</option>
+          </select>
+          <div id="tx-type-help" class="hidden" style="margin-top: 10px; padding: 10px; background: rgba(52, 152, 219, 0.05); border: 1px dashed rgba(52, 152, 219, 0.2); border-radius: 6px; font-size: 0.85rem; color: var(--text-primary); line-height: 1.4;"></div>
+        </div>
+        <div class="form-group">
+          <label>📅 تاريخ المعاملة:</label>
+          <input type="date" id="tx-date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>القيمة المالية (ج.م):</label>
+          <input type="number" id="tx-amount" class="form-control" placeholder="أدخل القيمة" required min="0">
+        </div>
+        <div class="form-group">
+          <label>البيان / ملاحظات المعاملة:</label>
+          <input type="text" id="tx-notes" class="form-control" placeholder="مثال: فاتورة توريد 5 أجهزة، أو تحويل انستاباي..." required>
+        </div>
+        <div class="form-group" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+          <label style="color: var(--accent); display: flex; align-items: center; gap: 6px;">
+            <i class='bx bx-paperclip'></i>
+            <span>إرفاق فاتورة أو إيصال أو ملف (اختياري):</span>
+          </label>
+          <input type="file" id="tx-attachment" class="form-control" accept="image/*,application/pdf">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-supplier-tx-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ المعاملة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 📎 MODAL: ADD DOCUMENT TO DEVICE(S) -->
+  <div id="add-doc-modal" class="modal">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3>📎 إضافة مستند لجهاز أو أكثر</h3>
+        <span class="close" onclick="closeModal('add-doc-modal')">&times;</span>
+      </div>
+      <form id="add-doc-form">
+        <input type="hidden" id="add-doc-device-id">
+        <div class="form-group">
+          <label>نوع المستند:</label>
+          <select id="add-doc-type" class="form-control" required>
+            <option value="__installation_report__">🛠️ محضر تركيب</option>
+            <option value="__sales_contract__">📄 عقد البيع</option>
+            <option value="__tax_invoice__">🧾 الفاتورة الضريبية</option>
+            <option value="__delivery_receipt__">📥 إذن استلام جهاز (Delivery Receipt)</option>
+            <option value="__delivery_note__">📦 إذن صرف مخزن (Delivery Note)</option>
+            <option value="__job_order__">🔧 أمر شغل (Job Order)</option>
+            <option value="__cash_receipt__">💵 إيصال استلام/سداد نقدية</option>
+            <option value="__general_doc__">📁 مستند عام</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>اختر الملف (صورة أو PDF):</label>
+          <input type="file" id="add-doc-file" class="form-control" accept="image/*,application/pdf" required>
+        </div>
+        <div class="form-group">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="margin-bottom:0;">📦 الأجهزة المراد إرفاق المستند بها:</label>
+            <button type="button" class="btn btn-secondary btn-table" onclick="toggleAllDocDevices()">تحديد الكل / إلغاء</button>
+          </div>
+          <div id="add-doc-devices-list" style="max-height:220px; overflow-y:auto; background:rgba(255,255,255,0.04); border-radius:8px; padding:10px; border:1px solid rgba(255,255,255,0.08);">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-doc-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">📤 رفع وإرفاق للأجهزة المحددة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✏️ MODAL: EDIT EMPLOYEE -->
+  <div id="edit-employee-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>✏️ تعديل بيانات الموظف</h3>
+        <span class="close" onclick="closeModal('edit-employee-modal')">&times;</span>
+      </div>
+      <form id="edit-employee-form">
+        <input type="hidden" id="edit-emp-id">
+        <div class="form-group">
+          <label>اسم الموظف:</label>
+          <input type="text" id="edit-emp-name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>الوظيفة:</label>
+          <input type="text" id="edit-emp-role" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>الراتب الشهري الأساسي (ج.م):</label>
+          <input type="number" id="edit-emp-salary" class="form-control" required min="0">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('edit-employee-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 💸 MODAL: PAY SALARY -->
+  <div id="pay-salary-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>💸 صرف الراتب الشهري للموظف</h3>
+        <span class="close" onclick="closeModal('pay-salary-modal')">&times;</span>
+      </div>
+      <form id="pay-salary-form">
+        <input type="hidden" id="pay-sal-emp-id">
+        <input type="hidden" id="pay-sal-month">
+        <div class="form-group">
+          <label>الموظف:</label>
+          <input type="text" id="pay-sal-emp-name" class="form-control" readonly style="background: rgba(255,255,255,0.05);">
+        </div>
+        <div class="form-group">
+          <label>الشهر:</label>
+          <input type="text" id="pay-sal-display-month" class="form-control" readonly style="background: rgba(255,255,255,0.05);">
+        </div>
+        <div class="form-group">
+          <label>الصافي المحسوب تلقائياً (ج.م):</label>
+          <input type="text" id="pay-sal-calc-net" class="form-control" readonly style="background: rgba(255,255,255,0.05);">
+        </div>
+        <div class="form-group">
+          <label>المبلغ الفعلي للصرف (الراتب النهائي):</label>
+          <input type="number" id="pay-sal-actual" class="form-control" required min="0">
+        </div>
+        <div class="form-group">
+          <label>طريقة الدفع:</label>
+          <select id="pay-sal-method" class="form-control" required>
+            <option value="خزنة">💵 كاش (خزنة الشركة)</option>
+            <option value="فودافون كاش">📱 فودافون كاش</option>
+            <option value="إنستا باي">⚡ إنستا باي (شخصي لوالدي)</option>
+            <option value="بنك">🏦 تحويل بنكي (شخصي لوالدي)</option>
+            <option value="حساب الشركة">🏦 حساب بيزنيس (الشركة)</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ملاحظات إضافية:</label>
+          <input type="text" id="pay-sal-notes" class="form-control" placeholder="مثال: صرف كامل مع إضافة مكافأة 500ج">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('pay-salary-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">تأكيد الصرف والخصم</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 🔍 MODAL: VIEW COMMISSIONS DETAIL -->
+  <div id="view-commissions-modal" class="modal">
+    <div class="modal-content" style="max-width: 650px; background: #111422; border: 1px solid rgba(255,255,255,0.08);">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+        <h3 style="color: var(--text-primary);"><i class='bx bx-search-alt' style="color: var(--accent-cyan);"></i> تفاصيل عمولات ومعدلات الموظف</h3>
+        <span class="close" onclick="closeModal('view-commissions-modal')">&times;</span>
+      </div>
+      <div class="modal-body" style="padding: 15px 0;">
+        <div style="background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="font-size: 1rem; color: var(--text-primary); font-weight: 600;">
+            الموظف: <span id="comm-detail-name" style="color: var(--accent);"></span>
+          </div>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+            الشهر المستهدف: <span id="comm-detail-month" style="font-weight:600; color:var(--text-primary);"></span>
+          </div>
+        </div>
+
+        <h4 style="color: var(--success); border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-top: 15px; margin-bottom: 10px; font-size: 0.95rem; font-weight: 600;">📦 تركيبات الأجهزة من المخزن:</h4>
+        <div class="table-responsive" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+          <table class="table" id="comm-detail-installations-table" style="font-size: 0.85rem;">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>سيريال الجهاز</th>
+                <th>العميل</th>
+                <th>الموديل والتفاصيل</th>
+                <th>دور الموظف</th>
+                <th>العمولة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <h4 style="color: var(--accent-cyan); border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-top: 20px; margin-bottom: 10px; font-size: 0.95rem; font-weight: 600;">🔧 أوامر الشغل (الصيانة والتركيبات الخارجية):</h4>
+        <div class="table-responsive" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
+          <table class="table" id="comm-detail-jobs-table" style="font-size: 0.85rem;">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>تفاصيل البيان</th>
+                <th>قيمة المعاملة</th>
+                <th>النسبة المحتسبة</th>
+                <th>العمولة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 20px; padding: 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px dashed var(--success); text-align: center; font-size: 1.1rem; font-weight: 700; color: var(--success);">
+          إجمالي العمولات والمعدلات المستحقة: <span id="comm-detail-total-amount">0</span> ج.م
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 15px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('view-commissions-modal')">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 💵 MODAL: ADD SALARY ADVANCE -->
+  <div id="add-advance-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>💵 تسجيل سلفة لموظف/فني</h3>
+        <span class="close" onclick="closeModal('add-advance-modal')">&times;</span>
+      </div>
+      <form id="add-advance-form">
+        <div class="form-group">
+          <label>الموظف/الفني:</label>
+          <select id="advance-tech-select" class="form-control" required>
+            <!-- Injected dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>مبلغ السلفة (ج.م):</label>
+          <input type="number" id="advance-amount" class="form-control" placeholder="أدخل مبلغ السلفة" required min="0">
+        </div>
+        <div class="form-group">
+          <label>البيان / ملاحظات:</label>
+          <input type="text" id="advance-notes" class="form-control" placeholder="مثال: سلفة من المرتب لشهر يوليو" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('add-advance-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">تسجيل السلفة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="photo-preview-modal" class="modal photo-modal" onclick="closeModal('photo-preview-modal')">
+    <div class="photo-preview-card" onclick="event.stopPropagation()">
+      <!-- Header -->
+      <div class="photo-preview-header">
+        <div class="photo-preview-title-wrap">
+          <span id="preview-doc-icon" class="photo-preview-icon">📄</span>
+          <div>
+            <div id="preview-doc-type" class="photo-preview-type">مستند</div>
+            <div id="preview-doc-title" class="photo-preview-title" style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-top: 3px;"></div>
+            <div id="preview-doc-meta" class="photo-preview-meta" style="margin-top: 2px;"></div>
+          </div>
+        </div>
+        <button class="close-photo" onclick="closeModal('photo-preview-modal')">&times;</button>
+      </div>
+      <!-- Image -->
+      <div class="photo-preview-img-wrap" style="position: relative;">
+        <img id="preview-image-element" src="" alt="مستند" class="photo-preview-img" style="cursor: zoom-in;" onclick="openFullscreenImage(this.src)" title="اضغط للتكبير وعرض كامل الشاشة">
+        <span style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.6); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; pointer-events: none; display: flex; align-items: center; gap: 4px; border: 1px solid rgba(255,255,255,0.1);"><i class='bx bx-zoom-in'></i> اضغط للتكبير</span>
+      </div>
+      <!-- Premium Details Grid -->
+      <div class="photo-preview-details">
+        <div class="detail-row">
+          <span class="detail-label">📋 تصنيف المستند الحالي:</span>
+          <div style="display: flex; gap: 8px; margin-top: 4px; align-items: center; flex-wrap: wrap;">
+            <select id="preview-change-type-select" class="form-control" style="padding: 4px 8px; font-size: 0.82rem; height: 32px; min-width: 140px; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px;">
+              <!-- Filled dynamically by JS -->
+            </select>
+            <button id="preview-change-type-btn" class="btn btn-primary" style="padding: 0 12px; font-size: 0.8rem; height: 32px; font-weight: 600;" onclick="changeDocumentType()">حفظ التصنيف</button>
+          </div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">👤 المستلم / المستفيد:</span>
+          <span id="preview-detail-recipient" class="detail-value">غير محدد</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">📦 ماركة وقدرة الجهاز:</span>
+          <span id="preview-detail-device" class="detail-value">غير محدد</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🔢 الرقم التسلسلي (S/N):</span>
+          <span id="preview-detail-serial" class="detail-value">غير محدد</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">💼 الحالة المالية للجهاز:</span>
+          <span id="preview-detail-financial" class="detail-value">غير محدد</span>
+        </div>
+        <div id="preview-batch-row" class="detail-row" style="display: none; margin-top: 6px; padding: 10px 14px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 8px;">
+          <span class="detail-label" style="color: #c084fc; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+            🔗 إذن عملية مجمعة (<span id="preview-batch-id"></span>)
+          </span>
+          <div style="font-size: 0.84rem; color: var(--text-primary); margin-top: 6px;">
+            📦 <strong>الأجهزة المشمولة في هذا الإذن المجمع:</strong>
+            <div id="preview-batch-devices-list" style="margin-top: 4px; padding-right: 10px; border-right: 3px solid #a855f7;"></div>
+          </div>
+          <div id="preview-batch-financial-summary" style="font-size: 0.82rem; color: #a855f7; font-weight: 600; margin-top: 6px;"></div>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">⚙️ خيارات الملف:</span>
+          <div style="display: flex; gap: 8px; margin-top: 4px;">
+            <a id="preview-open-link" href="#" target="_blank" class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.78rem; display: flex; align-items: center; gap: 4px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);"><i class='bx bx-link-external'></i> فتح بتبويب جديد</a>
+            <a id="preview-download-link" href="#" download class="btn btn-secondary" style="padding: 6px 10px; font-size: 0.78rem; display: flex; align-items: center; gap: 4px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary);"><i class='bx bx-download'></i> تحميل</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Viewer Modal -->
+  <div id="fullscreen-image-modal" class="modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 20000; align-items: center; justify-content: center; overflow: auto; cursor: zoom-out;" onclick="closeModal('fullscreen-image-modal')">
+    <button class="close-photo" style="position: fixed; top: 20px; left: 20px; width: 44px; height: 44px; font-size: 24px; z-index: 20001; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: white;" onclick="closeModal('fullscreen-image-modal')">&times;</button>
+    <img id="fullscreen-image-element" src="" alt="عرض كامل" style="max-width: 100%; max-height: 100%; object-fit: contain; cursor: default;" onclick="event.stopPropagation()">
+  </div>
+
+  <!-- 🚚 MODAL: TECHNICIAN WORK & DISPATCH HISTORY FOR ADMIN -->
+  <div id="technician-work-history-modal" class="modal">
+    <div class="modal-content" style="max-width: 950px; width: 95%;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="tech-work-history-title" style="margin: 0; display: flex; align-items: center; gap: 8px; color: var(--accent-cyan);">
+          <i class='bx bx-calendar-check' style="font-size: 1.4rem;"></i>
+          <span>📋 سجل نزول الشغل والزيارات الميدانية الموثق (للإدارة)</span>
+        </h3>
+        <span class="close" onclick="closeModal('technician-work-history-modal')" style="font-size: 1.5rem; cursor: pointer;">&times;</span>
+      </div>
+      <div class="modal-body" style="padding-top: 15px;">
+        <!-- Banner Stats -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 15px;">
+          <div style="background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); padding: 10px 14px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">اسم الموظف / الفني</span>
+            <strong id="tech-work-history-name" style="font-size: 1.15rem; color: var(--accent-cyan);">—</strong>
+          </div>
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 14px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">إجمالي أيام النزول للشغل</span>
+            <strong id="tech-work-history-days-count" style="font-size: 1.15rem; color: var(--success);">0 يوماً</strong>
+          </div>
+          <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 10px 14px; border-radius: 10px; text-align: center;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary); display: block;">إجمالي العمليات والتركيبات</span>
+            <strong id="tech-work-history-jobs-count" style="font-size: 1.15rem; color: #c084fc;">0 عملية</strong>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div style="max-height: 480px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <table id="tech-work-history-table" class="table" style="width: 100%; margin: 0;">
+            <thead>
+              <tr style="background: rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 2;">
+                <th>#</th>
+                <th>تاريخ النزول (اليوم/الشهر/السنة)</th>
+                <th>دور الفني</th>
+                <th>تفاصيل الجهاز / العملية</th>
+                <th>العميل / المستلم</th>
+                <th>الإذن / الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filled dynamically by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📋 MODAL: ALL ACTIVITIES LOG -->
+  <div id="all-activities-modal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3>📋 سجل النشاطات والعمليات بالكامل</h3>
+        <span class="close" onclick="closeModal('all-activities-modal')">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+          <input type="text" id="activity-log-search" oninput="filterActivityLog(this.value)" placeholder="البحث في سجل الحركات..." class="form-control" style="max-width: 300px;">
+        </div>
+        <div style="max-height: 60vh; overflow-y: auto; border-radius: var(--border-radius-md); border: 1px solid rgba(255,255,255,0.05);">
+          <table class="table" id="all-activities-table">
+            <thead>
+              <tr>
+                <th>القسم</th>
+                <th>الحركة</th>
+                <th>التفاصيل والبيان</th>
+                <th>القيمة</th>
+                <th>الوقت والتاريخ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 MODAL: ADD/EDIT FINANCIAL ITEM -->
+  <div id="financial-item-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="financial-modal-title">➕ إضافة بند مالي جديد</h3>
+        <span class="close" onclick="closeModal('financial-item-modal')">&times;</span>
+      </div>
+      <form id="financial-item-form">
+        <input type="hidden" id="fin-item-mode" value="ADD">
+        <input type="hidden" id="fin-item-original-name" value="">
+        
+        <div class="form-group">
+          <label>نوع التصنيف المالي:</label>
+          <select id="fin-item-category" class="form-control" required>
+            <option value="" disabled selected>-- اختر التصنيف --</option>
+            <option value="liquidity">سيولة ومحافظ نقدية (أصول)</option>
+            <option value="receivables">مستحقات خارجية (لينا عند الناس)</option>
+            <option value="payables">التزامات علينا للغير (علينا للناس)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>اسم الحساب / العميل / الجهة:</label>
+          <input type="text" id="fin-item-name" class="form-control" placeholder="مثال: فودافون كاش، هاني مصطفى..." required>
+        </div>
+        <div class="form-group">
+          <label>المبلغ الحالي (ج.م):</label>
+          <input type="number" id="fin-item-amount" class="form-control" placeholder="أدخل القيمة بالجنيه" required min="0">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('financial-item-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary" id="financial-modal-submit-btn">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 💵 MODAL: RECORD PAYMENT OR COLLECTION -->
+  <div id="record-financial-tx-modal" class="modal">
+    <div class="modal-content" style="max-width: 500px; background: #111422; border: 1px solid rgba(255,255,255,0.08);">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+        <h3 style="color: var(--text-primary);"><i class='bx bx-transfer-alt' style="color: var(--success);"></i> تسجيل عملية دفع أو تحصيل</h3>
+        <span class="close" onclick="closeModal('record-financial-tx-modal')">&times;</span>
+      </div>
+      <form id="record-financial-tx-form" onsubmit="handleRecordFinancialTxSubmit(event)">
+        <div class="form-group">
+          <label>نوع العملية:</label>
+          <select id="fin-tx-type" class="form-control" onchange="updateFinTxPeopleOptions()" required>
+            <option value="COLLECT">📥 تحصيل دفعة من شخص (لنا دين عنده)</option>
+            <option value="PAY">💵 تسديد دين / دفعة لشخص (علينا له)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>اسم الشخص / الطرف الآخر:</label>
+          <select id="fin-tx-person" class="form-control" onchange="updateFinTxCurrentBalance()" required>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>المبلغ المستحق الحالي (ج.م):</label>
+          <input type="text" id="fin-tx-current-bal" class="form-control" readonly style="background: rgba(255,255,255,0.05); font-weight: 700; color: var(--accent);">
+        </div>
+        <div class="form-group">
+          <label>المبلغ المدفوع / المحصل (ج.م):</label>
+          <input type="number" id="fin-tx-amount" class="form-control" required min="1" placeholder="أدخل القيمة بالجنيه...">
+        </div>
+        <div class="form-group">
+          <label>طريقة الدفع / وسيلة الاستلام:</label>
+          <select id="fin-tx-wallet" class="form-control" required>
+            <option value="خزنة">cash ← خزنة الشركة 💵</option>
+            <option value="فودافون كاش">Vodafone Cash 📱</option>
+            <option value="انستا باي">InstaPay ⚡</option>
+            <option value="بنك">حساب بنكي بيزنيس 🏦</option>
+            <option value="محفظة بنك مصر">🏦 محفظة بنك مصر</option>
+            <option value="حساب بنك مصر شخصي (والدي)">🏦 حساب بنك مصر شخصي (والدي)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>ملاحظات البيان:</label>
+          <input type="text" id="fin-tx-notes" class="form-control" placeholder="أدخل ملاحظات إضافية (مثال: شيك، دفعة كذا)...">
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 15px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('record-financial-tx-modal')">إلغاء</button>
+          <button type="submit" class="btn btn-primary" style="background: var(--success); border-color: var(--success);">حفظ العملية وتحديث الحسابات</button>
+        </div>
+      </form>
+    </div>
+  <!-- Overlay backdrop for mobile drawer -->
+  <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
+
+  <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
+  <!-- JS Controller -->
+  <script src="config.js"></script>
+  <script src="app.js?v=2.67.0"></script>
+</body>
+</html>

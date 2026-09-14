@@ -1,0 +1,21 @@
+{
+  "name": "futureairpro-erp-bot",
+  "version": "1.0.0",
+  "description": "Telegram Bot ERP System for Future Air AC Company",
+  "main": "api/webhook.js",
+  "type": "module",
+  "scripts": {
+    "start": "node api/webhook.js",
+    "build": "echo Build succeeded",
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.43.4",
+    "dotenv": "^16.4.5",
+    "telegraf": "^4.16.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.4"
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+.env
+.vercel
+config.js
+backups/
+backup_*.json
+baseline_*.json
+snapshot_*.json

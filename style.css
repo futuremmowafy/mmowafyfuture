@@ -1265,8 +1265,8 @@ tr.batch-hover-highlight > td {
     box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 12px !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
     background: rgba(17, 24, 39, 0.95) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     z-index: 100 !important;
@@ -1290,8 +1290,32 @@ tr.batch-hover-highlight > td {
   .digital-clock-widget,
   .status-indicator,
   .user-profile,
-  .btn-topbar-mode {
+  .btn-sandbox-toggle {
     display: none !important;
+  }
+
+  /* 💻 Desktop/Mobile Toggle Button: ALWAYS visible and prominent in mobile/compact view! */
+  .top-bar #toggle-desktop-mode-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 6px 11px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    background: rgba(14, 165, 233, 0.2) !important;
+    border: 1px solid rgba(14, 165, 233, 0.45) !important;
+    color: #38bdf8 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    line-height: 1.2 !important;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2) !important;
+  }
+
+  .top-bar #toggle-desktop-mode-btn:active {
+    transform: scale(0.96) !important;
+    background: rgba(14, 165, 233, 0.35) !important;
   }
 
   .main-content,

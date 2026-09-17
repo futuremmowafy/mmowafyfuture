@@ -44,7 +44,7 @@
   <!-- Boxicons CDN for modern premium icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.31.0">
+  <link rel="stylesheet" href="style.css?v=2.32.0">
   <!-- Telegram WebApp SDK for Native Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
@@ -152,6 +152,11 @@
       </nav>
 
       <div class="sidebar-footer">
+        <!-- Toggle desktop / mobile mode button inside sidebar drawer -->
+        <button type="button" id="sidebar-desktop-toggle-btn" class="btn btn-sidebar-desktop" onclick="toggleDesktopMode(); if(typeof toggleMobileSidebar==='function') toggleMobileSidebar(false);" style="background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.35); color: #38bdf8; font-weight: 700; margin-bottom: 8px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; border-radius: 8px; cursor: pointer;" title="التبديل بين وضع الكمبيوتر والموبايل">
+          <span id="sidebar-desktop-mode-icon">💻</span>
+          <span id="sidebar-desktop-mode-text">تكبير لشاشة الكمبيوتر 💻</span>
+        </button>
         <!-- Open in external PC browser button -->
         <button type="button" class="btn btn-sidebar-browser" onclick="openInExternalBrowser()" title="فتح في متصفح الكمبيوتر (Chrome / Edge)">
           <i class='bx bx-desktop' style="font-size: 1.1rem;"></i>
@@ -174,13 +179,15 @@
       
       <!-- 🌐 TOP BAR -->
       <header class="top-bar">
-        <!-- Hamburger Menu Button for Mobile -->
-        <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1.5rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; align-items: center; justify-content: center; margin-left: 10px;">
-          <i class='bx bx-menu'></i>
-        </button>
+        <div class="top-bar-start" style="display: flex; align-items: center; gap: 8px;">
+          <!-- Hamburger Menu Button for Mobile -->
+          <button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 1.5rem; padding: 6px 10px; border-radius: 6px; cursor: pointer; align-items: center; justify-content: center;">
+            <i class='bx bx-menu'></i>
+          </button>
 
-        <div class="page-title">
-          <h2 id="current-tab-title">لوحة المؤشرات</h2>
+          <div class="page-title">
+            <h2 id="current-tab-title">لوحة المؤشرات</h2>
+          </div>
         </div>
         
         <!-- Beautiful Glowing Digital Clock and Date -->
@@ -306,7 +313,7 @@
                   <!-- 🔍 Universal Instant Search Box for Activities -->
                   <div class="activities-search-wrapper" style="position: relative; flex: 1; min-width: 240px; max-width: 400px;">
                     <i class='bx bx-search' style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #38bdf8; font-size: 1.15rem; pointer-events: none;"></i>
-                    <input type="text" id="recent-activities-search" oninput="filterRecentActivities(this.value)" placeholder="🔍 بحث بأي كلمة أو رقم (عميل، سيريال، مبلغ، مورد)..." style="width: 100%; padding: 7px 36px 7px 30px; background: rgba(255,255,255,0.06); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; color: #fff; font-size: 0.85rem; outline: none; transition: all 0.2s ease; box-sizing: border-box;" onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 10px rgba(56, 189, 248, 0.3)';" onblur="this.style.borderColor='rgba(56, 189, 248, 0.35)'; this.style.boxShadow='none';">
+                    <input type="text" id="recent-activities-search" oninput="handleActivitiesSearchInput(this.value)" onkeydown="if(event.key==='Enter') filterRecentActivities(this.value)" placeholder="🔍 بحث بأي كلمة أو رقم (عميل، سيريال، مبلغ، مورد)..." style="width: 100%; padding: 7px 36px 7px 30px; background: rgba(255,255,255,0.06); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; color: #fff; font-size: 0.85rem; outline: none; transition: all 0.2s ease; box-sizing: border-box;" onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 10px rgba(56, 189, 248, 0.3)';" onblur="this.style.borderColor='rgba(56, 189, 248, 0.35)'; this.style.boxShadow='none';">
                     <button type="button" id="clear-recent-activities-search" onclick="clearRecentActivitiesSearch()" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; display: none; padding: 0; line-height: 1;" title="مسح البحث">&times;</button>
                   </div>
                   <span id="activities-search-count" style="display: none; font-size: 0.8rem; color: #38bdf8; font-weight: 700; white-space: nowrap;"></span>
@@ -3214,6 +3221,6 @@
   <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
   <!-- JS Controller -->
   <script src="config.js"></script>
-  <script src="app.js?v=2.73.0"></script>
+  <script src="app.js?v=2.74.0"></script>
 </body>
 </html>

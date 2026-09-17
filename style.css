@@ -1253,18 +1253,21 @@ tr.batch-hover-highlight > td {
 
   /* Mobile Top Bar Controls */
   .top-bar {
-    padding: 0 10px !important;
-    height: 52px !important;
-    min-height: 52px !important;
+    padding-top: max(8px, env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: 8px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    height: auto !important;
+    min-height: calc(52px + env(safe-area-inset-top, 0px)) !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow: hidden !important;
     box-sizing: border-box !important;
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
-    gap: 6px !important;
-    background: rgba(17, 24, 39, 0.85) !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    background: rgba(17, 24, 39, 0.95) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     z-index: 100 !important;
   }
@@ -1272,33 +1275,23 @@ tr.batch-hover-highlight > td {
   .mobile-menu-btn,
   body.force-desktop-mode .mobile-menu-btn {
     display: flex !important;
-    padding: 6px 10px !important;
-  }
-
-  .digital-clock-widget {
-    display: none !important;
-  }
-
-  .status-indicator {
-    display: none !important;
-  }
-
-  .user-profile {
-    display: none !important;
-  }
-
-  .btn-topbar-mode {
-    padding: 6px 9px !important;
-    font-size: 0.78rem !important;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px !important;
+    font-size: 1.6rem !important;
     border-radius: 8px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    white-space: nowrap !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
   }
-  .btn-topbar-mode span.btn-text {
-    display: inline-block !important;
-    font-size: 0.75rem !important;
+
+  .digital-clock-widget,
+  .status-indicator,
+  .user-profile,
+  .btn-topbar-mode {
+    display: none !important;
   }
 
   .main-content,

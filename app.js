@@ -107,15 +107,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start glowing digital clock
   startDigitalClock();
 
-  // 📱 Telegram Mini App Setup (Auto-expand to Large Window on PC)
+  // 📱 Telegram Mini App Setup (Auto-expand to Large Window on PC ONLY)
   if (window.Telegram?.WebApp) {
     const twa = window.Telegram.WebApp;
     try {
       twa.ready();
       twa.expand();
-      // 🚀 Auto Fullscreen on PC to open in large window immediately!
-      if (typeof twa.requestFullscreen === 'function') {
-        twa.requestFullscreen();
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
+                       twa.platform === 'android' || 
+                       twa.platform === 'ios';
+      // 🚀 Auto Fullscreen ONLY on PC / Laptop, NEVER on mobile!
+      if (!isMobile) {
+        if (typeof twa.requestFullscreen === 'function') {
+          twa.requestFullscreen();
+        }
+      } else {
+        // If mobile was somehow placed in fullscreen, exit it immediately
+        if (twa.isFullscreen && typeof twa.exitFullscreen === 'function') {
+          twa.exitFullscreen();
+        }
       }
       // 🛡️ Prevent pull-to-dismiss scroll gesture on mobile (Official Telegram SDK API)
       if (typeof twa.disableVerticalSwipes === 'function') {
@@ -9399,8 +9409,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
   }
 
-  // 🖥️ Auto Fullscreen & Large Window on PC / Telegram Desktop
-  if (window.Telegram?.WebApp) {
+  // 🖥️ Auto Fullscreen & Large Window on PC / Laptop ONLY (Never on Mobile!)
+  if (!isMobileDevice && window.Telegram?.WebApp) {
     try {
       window.Telegram.WebApp.expand();
       if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
@@ -9408,14 +9418,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (e) {}
   }
-
-  // Also trigger fullscreen expansion on first click gesture (required by some desktop browsers)
-  document.addEventListener('pointerdown', function autoFullscreenOnFirstGesture() {
-    if (window.Telegram?.WebApp && typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-      try { window.Telegram.WebApp.requestFullscreen(); } catch (e) {}
-    }
-    document.removeEventListener('pointerdown', autoFullscreenOnFirstGesture);
-  }, { once: true });
 
   // Ensure mobile drawer is closed on initial launch
   if (typeof toggleMobileSidebar === 'function') {

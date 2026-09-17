@@ -870,23 +870,14 @@ async function renderOverviewTab() {
     } else {
       displayActivities = activities.slice(0, 30);
     }
+    window.currentFilteredActivities = displayActivities;
 
-    tbody.innerHTML = '';
-    if (displayActivities.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="color: var(--text-secondary); padding: 25px 15px;">لا توجد عمليات أو نشاطات مسجلة في هذا التاريخ (${getFormattedDateLabel(selectedDate)}).</td></tr>`;
+    // Check if user currently has an active search keyword:
+    const activeSearch = document.getElementById('recent-activities-search')?.value;
+    if (activeSearch && activeSearch.trim()) {
+      filterRecentActivities(activeSearch);
     } else {
-      displayActivities.forEach(act => {
-        const dateStr = act.date.toLocaleDateString('ar-EG', { month: 'numeric', day: 'numeric' }) + ' ' + act.date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-        tbody.innerHTML += `
-          <tr>
-            <td><strong>${act.section}</strong></td>
-            <td><span class="${act.typeClass}">${act.type}</span></td>
-            <td>${act.details}</td>
-            <td style="font-weight: 600;">${act.value}</td>
-            <td style="color: var(--text-secondary); font-size: 0.8rem;">${dateStr}</td>
-          </tr>
-        `;
-      });
+      renderRecentActivitiesRows(displayActivities, selectedDate);
     }
 
   } catch (err) {
@@ -902,6 +893,130 @@ function renderOverviewChart() {
   // Chart removed as per user request
   return;
 }
+
+// --- 🔍 RECENT ACTIVITIES INSTANT SEARCH & RENDERING ENGINE ---
+function normalizeSearchText(str) {
+  if (!str) return '';
+  return String(str)
+    .toLowerCase()
+    .replace(/[\u064B-\u065F]/g, '') // remove arabic tashkeel
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/[ىي]/g, 'ي')
+    .replace(/[\u0660-\u0669]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)) // convert arabic digits
+    .replace(/[,\s_/-]/g, ''); // remove punctuation/separators for seamless matching
+}
+
+function renderRecentActivitiesRows(list, selectedDate) {
+  const tbody = document.querySelector('#recent-cash-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const countEl = document.getElementById('activities-search-count');
+  if (countEl) countEl.style.display = 'none';
+
+  if (!list || list.length === 0) {
+    const msg = selectedDate 
+      ? `لا توجد عمليات أو نشاطات مسجلة في هذا التاريخ (${getFormattedDateLabel(selectedDate)}).`
+      : 'لا توجد نشاطات مسجلة حالياً.';
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="color: var(--text-secondary); padding: 25px 15px;">${msg}</td></tr>`;
+    return;
+  }
+
+  list.forEach(act => {
+    const dateStr = act.date.toLocaleDateString('ar-EG', { month: 'numeric', day: 'numeric' }) + ' ' + act.date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${act.section}</strong></td>
+        <td><span class="${act.typeClass}">${act.type}</span></td>
+        <td>${act.details}</td>
+        <td style="font-weight: 600;">${act.value}</td>
+        <td style="color: var(--text-secondary); font-size: 0.8rem;">${dateStr}</td>
+      </tr>
+    `;
+  });
+}
+
+function filterRecentActivities(query) {
+  const clearBtn = document.getElementById('clear-recent-activities-search');
+  const countEl = document.getElementById('activities-search-count');
+  const tbody = document.querySelector('#recent-cash-table tbody');
+  if (!tbody) return;
+
+  const trimmedQuery = (query || '').trim();
+
+  if (clearBtn) {
+    clearBtn.style.display = trimmedQuery ? 'block' : 'none';
+  }
+
+  // If search query is empty, return to current date-filtered view
+  if (!trimmedQuery) {
+    if (countEl) countEl.style.display = 'none';
+    const dateInput = document.getElementById('activities-date-filter');
+    const selectedDate = dateInput ? dateInput.value : '';
+    renderRecentActivitiesRows(window.currentFilteredActivities || window.allActivities || [], selectedDate);
+    return;
+  }
+
+  const terms = trimmedQuery.toLowerCase().split(/\s+/).filter(Boolean);
+  const allActs = window.allActivities || [];
+
+  const results = allActs.filter(act => {
+    const rawContent = `${act.section} ${act.type} ${act.details} ${act.value}`.toLowerCase();
+    const normContent = normalizeSearchText(`${act.section} ${act.type} ${act.details} ${act.value}`);
+    const dateStr = act.date ? (act.date.toLocaleDateString('ar-EG') + ' ' + act.date.toLocaleDateString('en-US') + ' ' + act.date.toLocaleTimeString('ar-EG')) : '';
+    const normDate = normalizeSearchText(dateStr);
+
+    // Every search term must match somewhere in the row
+    return terms.every(term => {
+      const normTerm = normalizeSearchText(term);
+      return rawContent.includes(term) || 
+             normContent.includes(normTerm) || 
+             dateStr.toLowerCase().includes(term) || 
+             normDate.includes(normTerm);
+    });
+  });
+
+  if (countEl) {
+    countEl.textContent = `(نتائج البحث: ${results.length.toLocaleString('ar-EG')})`;
+    countEl.style.display = 'inline-block';
+  }
+
+  tbody.innerHTML = '';
+  if (results.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="text-center" style="color: var(--text-secondary); padding: 35px 15px;">
+          🔍 لا توجد عمليات مطابقة لبحثك: "<strong>${trimmedQuery.replace(/[&<>"']/g, '')}</strong>".
+        </td>
+      </tr>
+    `;
+  } else {
+    results.forEach(act => {
+      const dateStr = act.date.toLocaleDateString('ar-EG', { month: 'numeric', day: 'numeric' }) + ' ' + act.date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${act.section}</strong></td>
+          <td><span class="${act.typeClass}">${act.type}</span></td>
+          <td>${act.details}</td>
+          <td style="font-weight: 600;">${act.value}</td>
+          <td style="color: var(--text-secondary); font-size: 0.8rem;">${dateStr}</td>
+        </tr>
+      `;
+    });
+  }
+}
+window.filterRecentActivities = filterRecentActivities;
+
+function clearRecentActivitiesSearch() {
+  const input = document.getElementById('recent-activities-search');
+  if (input) {
+    input.value = '';
+    filterRecentActivities('');
+    input.focus();
+  }
+}
+window.clearRecentActivitiesSearch = clearRecentActivitiesSearch;
 
 // --- 2. INVENTORY PAGE RENDERING ---
 function renderInventoryTab() {
@@ -9184,45 +9299,48 @@ window.setInventoryLogDateOffset = setInventoryLogDateOffset;
 window.showAllInventoryLogDays = showAllInventoryLogDays;
 window.switchInventorySubTab = switchInventorySubTab;
 
-// 💻 Desktop / Mobile View Mode Toggle & External Browser Access
+// 💻 Desktop / Mobile View Mode Toggle (Shrink/Expand in Telegram Desktop)
 function toggleDesktopMode() {
-  const isNarrowScreen = window.innerWidth < 850;
-  
-  // If screen is narrow (Telegram Desktop popup or mobile):
-  if (isNarrowScreen) {
-    // Try expanding Telegram WebApp window if supported
-    try {
-      if (window.Telegram?.WebApp) {
-        if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-          window.Telegram.WebApp.requestFullscreen();
-        }
-        if (typeof window.Telegram.WebApp.expand === 'function') {
-          window.Telegram.WebApp.expand();
-        }
-      }
-    } catch (e) {}
-
-    // Open options modal so user can open in Chrome/Edge or fullscreen
-    openDesktopOptionsModal();
-    return;
-  }
-
-  // On wide PC screens: Toggle standard desktop two-column mode
-  const isDesktop = document.body.classList.toggle('force-desktop-mode');
+  const twa = window.Telegram?.WebApp;
+  const isCurrentlyDesktop = document.body.classList.contains('force-desktop-mode');
   const btnText = document.getElementById('desktop-mode-text');
   const btnIcon = document.getElementById('desktop-mode-icon');
   const viewportMeta = document.querySelector('meta[name="viewport"]');
 
-  if (isDesktop) {
-    if (btnText) btnText.textContent = 'وضع الموبايل';
-    if (btnIcon) btnIcon.textContent = '📱';
-    if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
-    localStorage.setItem('force_desktop_mode', 'true');
-  } else {
+  if (isCurrentlyDesktop) {
+    // 📱 User clicks "وضع الموبايل":
+    // 1. Remove force desktop layout
+    document.body.classList.remove('force-desktop-mode');
+    localStorage.removeItem('force_desktop_mode');
     if (btnText) btnText.textContent = 'نسخة الكمبيوتر';
     if (btnIcon) btnIcon.textContent = '💻';
     if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-    localStorage.removeItem('force_desktop_mode');
+    
+    // 2. 🗗 Exit Fullscreen in Telegram Desktop so it shrinks into compact floating window and stays open!
+    try {
+      if (twa && typeof twa.exitFullscreen === 'function') {
+        twa.exitFullscreen();
+      }
+    } catch (e) {
+      console.warn('exitFullscreen notice:', e);
+    }
+  } else {
+    // 💻 User clicks "نسخة الكمبيوتر":
+    document.body.classList.add('force-desktop-mode');
+    localStorage.setItem('force_desktop_mode', 'true');
+    if (btnText) btnText.textContent = 'وضع الموبايل';
+    if (btnIcon) btnIcon.textContent = '📱';
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
+    
+    // ⛶ Expand / Fullscreen in Telegram Desktop
+    try {
+      if (twa) {
+        if (typeof twa.expand === 'function') twa.expand();
+        if (typeof twa.requestFullscreen === 'function') twa.requestFullscreen();
+      }
+    } catch (e) {
+      console.warn('requestFullscreen notice:', e);
+    }
   }
 }
 window.toggleDesktopMode = toggleDesktopMode;
@@ -9320,6 +9438,13 @@ function resetDisplayMode() {
   if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
   if (typeof toggleMobileSidebar === 'function') {
     toggleMobileSidebar(false);
+  }
+  try {
+    if (window.Telegram?.WebApp && typeof window.Telegram.WebApp.exitFullscreen === 'function') {
+      window.Telegram.WebApp.exitFullscreen();
+    }
+  } catch (e) {
+    console.warn('exitFullscreen in resetDisplayMode notice:', e);
   }
 }
 window.resetDisplayMode = resetDisplayMode;

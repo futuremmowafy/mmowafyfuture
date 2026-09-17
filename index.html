@@ -44,7 +44,7 @@
   <!-- Boxicons CDN for modern premium icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.30.0">
+  <link rel="stylesheet" href="style.css?v=2.31.0">
   <!-- Telegram WebApp SDK for Native Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
@@ -300,8 +300,16 @@
           <div class="dashboard-grid">
             <div class="card list-card">
               <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <h3 style="margin: 0; font-size: 1.05rem;">🔔 سجل النشاطات والعمليات الأخيرة</h3>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                  <h3 style="margin: 0; font-size: 1.05rem; white-space: nowrap;">🔔 سجل النشاطات والعمليات الأخيرة</h3>
+
+                  <!-- 🔍 Universal Instant Search Box for Activities -->
+                  <div class="activities-search-wrapper" style="position: relative; flex: 1; min-width: 240px; max-width: 400px;">
+                    <i class='bx bx-search' style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #38bdf8; font-size: 1.15rem; pointer-events: none;"></i>
+                    <input type="text" id="recent-activities-search" oninput="filterRecentActivities(this.value)" placeholder="🔍 بحث بأي كلمة أو رقم (عميل، سيريال، مبلغ، مورد)..." style="width: 100%; padding: 7px 36px 7px 30px; background: rgba(255,255,255,0.06); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; color: #fff; font-size: 0.85rem; outline: none; transition: all 0.2s ease; box-sizing: border-box;" onfocus="this.style.borderColor='#38bdf8'; this.style.boxShadow='0 0 10px rgba(56, 189, 248, 0.3)';" onblur="this.style.borderColor='rgba(56, 189, 248, 0.35)'; this.style.boxShadow='none';">
+                    <button type="button" id="clear-recent-activities-search" onclick="clearRecentActivitiesSearch()" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.2rem; display: none; padding: 0; line-height: 1;" title="مسح البحث">&times;</button>
+                  </div>
+                  <span id="activities-search-count" style="display: none; font-size: 0.8rem; color: #38bdf8; font-weight: 700; white-space: nowrap;"></span>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -3206,6 +3214,6 @@
   <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
   <!-- JS Controller -->
   <script src="config.js"></script>
-  <script src="app.js?v=2.72.0"></script>
+  <script src="app.js?v=2.73.0"></script>
 </body>
 </html>

@@ -44,9 +44,20 @@
   <!-- Boxicons CDN for modern premium icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.27.0">
+  <link rel="stylesheet" href="style.css?v=2.29.0">
   <!-- Telegram WebApp SDK for Native Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    try {
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+        if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+          window.Telegram.WebApp.requestFullscreen();
+        }
+      }
+    } catch(e) {}
+  </script>
   <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Chart.js CDN -->
@@ -83,8 +94,10 @@
           <h1>فيوتشر إير</h1>
           <span>Future Air ERP</span>
         </div>
-        <!-- Close button for mobile drawer -->
-        <button id="mobile-menu-close" class="mobile-menu-close-btn" onclick="toggleMobileSidebar(false)" style="background: none; border: none; color: rgba(255,255,255,0.6); font-size: 1.6rem; cursor: pointer; padding: 0; line-height: 1; margin-right: auto; margin-left: 0;">&times;</button>
+        <!-- Close button for sidebar (X) -->
+        <button id="mobile-menu-close" class="mobile-menu-close-btn" onclick="toggleMobileSidebar(false)" title="إغلاق القائمة الجانبية (X)">
+          <i class='bx bx-x'></i>
+        </button>
       </div>
       
       <nav class="sidebar-menu">
@@ -133,6 +146,16 @@
       </nav>
 
       <div class="sidebar-footer">
+        <!-- Open in external PC browser button -->
+        <button type="button" class="btn btn-sidebar-browser" onclick="openInExternalBrowser()" title="فتح في متصفح الكمبيوتر (Chrome / Edge)">
+          <i class='bx bx-desktop' style="font-size: 1.1rem;"></i>
+          <span>🖥️ فتح بمتصفح الكمبيوتر</span>
+        </button>
+        <!-- Reset display mode button -->
+        <button type="button" class="btn btn-sidebar-reset" onclick="resetDisplayMode()" title="إعادة ضبط وتحديث العرض">
+          <i class='bx bx-reset' style="font-size: 1.1rem;"></i>
+          <span>🔄 إعادة ضبط العرض</span>
+        </button>
         <button id="logout-btn" class="btn btn-logout">
           <i class='bx bx-log-out'></i>
           <span>خروج</span>
@@ -163,10 +186,16 @@
           <span id="digital-date" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">--/--/----</span>
         </div>
 
+        <!-- Maximize / Fullscreen Button for PC -->
+        <button type="button" id="toggle-fullscreen-btn" class="btn-topbar-mode btn-fullscreen-toggle" onclick="requestTelegramFullscreen()" title="تكبير النافذة للشاشة الكاملة">
+          <i class='bx bx-fullscreen' style="font-size: 1.15rem; color: #38bdf8;"></i>
+          <span class="btn-text">تكبير الشاشة</span>
+        </button>
+
         <!-- Desktop / Mobile View Mode Toggle -->
-        <button type="button" id="toggle-desktop-mode-btn" class="btn-topbar-mode btn-desktop-toggle" onclick="toggleDesktopMode()" title="التبديل بين وضع الموبايل والكمبيوتر">
+        <button type="button" id="toggle-desktop-mode-btn" class="btn-topbar-mode btn-desktop-toggle" onclick="toggleDesktopMode()" title="خيارات نسخة الكمبيوتر والعرض">
           <span id="desktop-mode-icon">💻</span>
-          <span class="btn-text" id="desktop-mode-text">وضع الكمبيوتر</span>
+          <span class="btn-text" id="desktop-mode-text">نسخة الكمبيوتر</span>
         </button>
 
         <!-- Bot Sandbox Test Mode Button -->
@@ -3177,6 +3206,6 @@
   <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
   <!-- JS Controller -->
   <script src="config.js"></script>
-  <script src="app.js?v=2.69.0"></script>
+  <script src="app.js?v=2.71.0"></script>
 </body>
 </html>

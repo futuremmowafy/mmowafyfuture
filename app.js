@@ -107,12 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start glowing digital clock
   startDigitalClock();
 
-  // 📱 Telegram Mini App Setup (Exact tactics from رحلة عبدالله)
+  // 📱 Telegram Mini App Setup (Auto-expand to Large Window on PC)
   if (window.Telegram?.WebApp) {
     const twa = window.Telegram.WebApp;
     try {
       twa.ready();
       twa.expand();
+      // 🚀 Auto Fullscreen on PC to open in large window immediately!
+      if (typeof twa.requestFullscreen === 'function') {
+        twa.requestFullscreen();
+      }
       // 🛡️ Prevent pull-to-dismiss scroll gesture on mobile (Official Telegram SDK API)
       if (typeof twa.disableVerticalSwipes === 'function') {
         twa.disableVerticalSwipes();
@@ -9170,32 +9174,30 @@ window.setInventoryLogDateOffset = setInventoryLogDateOffset;
 window.showAllInventoryLogDays = showAllInventoryLogDays;
 window.switchInventorySubTab = switchInventorySubTab;
 
-// 💻 Desktop / Mobile View Mode Toggle (Exact tactics from رحلة عبدالله)
+// 💻 Desktop / Mobile View Mode Toggle & External Browser Access
 function toggleDesktopMode() {
-  // Detect if user is on mobile
-  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
-                         window.Telegram?.WebApp?.platform === 'android' || 
-                         window.Telegram?.WebApp?.platform === 'ios';
+  const isNarrowScreen = window.innerWidth < 850;
   
-  if (isMobileDevice) {
-    // Do nothing when clicked from mobile as in رحلة عبدالله
+  // If screen is narrow (Telegram Desktop popup or mobile):
+  if (isNarrowScreen) {
+    // Try expanding Telegram WebApp window if supported
+    try {
+      if (window.Telegram?.WebApp) {
+        if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+          window.Telegram.WebApp.requestFullscreen();
+        }
+        if (typeof window.Telegram.WebApp.expand === 'function') {
+          window.Telegram.WebApp.expand();
+        }
+      }
+    } catch (e) {}
+
+    // Open options modal so user can open in Chrome/Edge or fullscreen
+    openDesktopOptionsModal();
     return;
   }
 
-  // On Laptop / Desktop (Telegram Desktop or Browser):
-  // 1. Expand Telegram WebApp window to full screen
-  try {
-    if (window.Telegram?.WebApp) {
-      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
-        window.Telegram.WebApp.requestFullscreen();
-      }
-      if (typeof window.Telegram.WebApp.expand === 'function') {
-        window.Telegram.WebApp.expand();
-      }
-    }
-  } catch (e) {}
-
-  // 2. Toggle Desktop Layout mode
+  // On wide PC screens: Toggle standard desktop two-column mode
   const isDesktop = document.body.classList.toggle('force-desktop-mode');
   const btnText = document.getElementById('desktop-mode-text');
   const btnIcon = document.getElementById('desktop-mode-icon');
@@ -9207,13 +9209,110 @@ function toggleDesktopMode() {
     if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
     localStorage.setItem('force_desktop_mode', 'true');
   } else {
-    if (btnText) btnText.textContent = 'وضع الكمبيوتر';
+    if (btnText) btnText.textContent = 'نسخة الكمبيوتر';
     if (btnIcon) btnIcon.textContent = '💻';
     if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
     localStorage.removeItem('force_desktop_mode');
   }
 }
 window.toggleDesktopMode = toggleDesktopMode;
+
+function openDesktopOptionsModal() {
+  let modal = document.getElementById('desktop-options-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'desktop-options-modal';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.background = 'rgba(0, 0, 0, 0.75)';
+    modal.style.backdropFilter = 'blur(6px)';
+    modal.style.zIndex = '999999';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.padding = '15px';
+    modal.style.boxSizing = 'border-box';
+    modal.style.direction = 'rtl';
+    modal.innerHTML = `
+      <div style="background: #1e293b; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 22px; max-width: 380px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.6); text-align: center; color: #fff;">
+        <div style="font-size: 2.2rem; margin-bottom: 8px;">🖥️</div>
+        <h3 style="margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; color: #38bdf8;">خيارات نسخة الكمبيوتر</h3>
+        <p style="margin: 0 0 18px; font-size: 0.88rem; color: #94a3b8; line-height: 1.5;">
+          للحصول على أفضل وأشمل تجربة للوحة التحكم على شاشة الكمبيوتر بالكامل:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button type="button" onclick="openInExternalBrowser(); closeDesktopOptionsModal();" style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; color: #fff; padding: 12px 16px; border-radius: 10px; font-weight: 700; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);">
+            <i class='bx bx-globe' style="font-size: 1.2rem;"></i>
+            <span>فتح في متصفح الكمبيوتر (Chrome / Edge)</span>
+          </button>
+          <button type="button" onclick="requestTelegramFullscreen(); closeDesktopOptionsModal();" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class='bx bx-fullscreen' style="font-size: 1.2rem;"></i>
+            <span>تكبير نافذة تليجرام للشاشة الكاملة</span>
+          </button>
+          <button type="button" onclick="closeDesktopOptionsModal()" style="background: none; border: none; color: #94a3b8; padding: 8px; font-size: 0.82rem; cursor: pointer; text-decoration: underline;">
+            إغلاق والبقاء في التطبيق المصغر المتجاوب
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  } else {
+    modal.style.display = 'flex';
+  }
+}
+window.openDesktopOptionsModal = openDesktopOptionsModal;
+
+function closeDesktopOptionsModal() {
+  const modal = document.getElementById('desktop-options-modal');
+  if (modal) modal.style.display = 'none';
+}
+window.closeDesktopOptionsModal = closeDesktopOptionsModal;
+
+function requestTelegramFullscreen() {
+  try {
+    if (window.Telegram?.WebApp) {
+      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+        window.Telegram.WebApp.requestFullscreen();
+      }
+      if (typeof window.Telegram.WebApp.expand === 'function') {
+        window.Telegram.WebApp.expand();
+      }
+    }
+  } catch (e) {}
+}
+window.requestTelegramFullscreen = requestTelegramFullscreen;
+
+function openInExternalBrowser() {
+  const currentUrl = window.location.href;
+  try {
+    if (window.Telegram?.WebApp?.openLink) {
+      window.Telegram.WebApp.openLink(currentUrl);
+      return;
+    }
+  } catch (e) {
+    console.warn('Telegram openLink notice:', e);
+  }
+  window.open(currentUrl, '_blank');
+}
+window.openInExternalBrowser = openInExternalBrowser;
+
+function resetDisplayMode() {
+  document.body.classList.remove('force-desktop-mode');
+  localStorage.removeItem('force_desktop_mode');
+  const btnText = document.getElementById('desktop-mode-text');
+  const btnIcon = document.getElementById('desktop-mode-icon');
+  if (btnText) btnText.textContent = 'نسخة الكمبيوتر';
+  if (btnIcon) btnIcon.textContent = '💻';
+  const viewportMeta = document.querySelector('meta[name="viewport"]');
+  if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+  if (typeof toggleMobileSidebar === 'function') {
+    toggleMobileSidebar(false);
+  }
+}
+window.resetDisplayMode = resetDisplayMode;
 
 // 🛡️ Prevent Pull-to-Dismiss Gesture & Window Overscroll on Mobile (Exact رحلة عبدالله Tactic)
 let touchStartY = 0;
@@ -9273,15 +9372,23 @@ document.addEventListener('mouseout', (e) => {
   }
 });
 
-// Restore saved desktop mode preference on page load (exact رحلة عبدالله tactic)
+// Restore saved desktop mode preference on page load (with narrow screen safety)
 document.addEventListener('DOMContentLoaded', () => {
   const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || 
                          window.Telegram?.WebApp?.platform === 'android' || 
                          window.Telegram?.WebApp?.platform === 'ios';
 
-  if (isMobileDevice) {
+  // 🛡️ CRITICAL RESCUE: If window is narrow (< 850px, e.g. Telegram Desktop popup or phone),
+  // NEVER force broken 1200px desktop mode! Clean up any saved force_desktop_mode so user is never trapped.
+  if (window.innerWidth < 850 || isMobileDevice) {
     document.body.classList.remove('force-desktop-mode');
     localStorage.removeItem('force_desktop_mode');
+    const btnText = document.getElementById('desktop-mode-text');
+    const btnIcon = document.getElementById('desktop-mode-icon');
+    if (btnText) btnText.textContent = 'نسخة الكمبيوتر';
+    if (btnIcon) btnIcon.textContent = '💻';
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
   } else if (localStorage.getItem('force_desktop_mode') === 'true') {
     document.body.classList.add('force-desktop-mode');
     const btnText = document.getElementById('desktop-mode-text');
@@ -9290,6 +9397,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnText) btnText.textContent = 'وضع الموبايل';
     if (btnIcon) btnIcon.textContent = '📱';
     if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
+  }
+
+  // 🖥️ Auto Fullscreen & Large Window on PC / Telegram Desktop
+  if (window.Telegram?.WebApp) {
+    try {
+      window.Telegram.WebApp.expand();
+      if (typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+        window.Telegram.WebApp.requestFullscreen();
+      }
+    } catch (e) {}
+  }
+
+  // Also trigger fullscreen expansion on first click gesture (required by some desktop browsers)
+  document.addEventListener('pointerdown', function autoFullscreenOnFirstGesture() {
+    if (window.Telegram?.WebApp && typeof window.Telegram.WebApp.requestFullscreen === 'function') {
+      try { window.Telegram.WebApp.requestFullscreen(); } catch (e) {}
+    }
+    document.removeEventListener('pointerdown', autoFullscreenOnFirstGesture);
+  }, { once: true });
+
+  // Ensure mobile drawer is closed on initial launch
+  if (typeof toggleMobileSidebar === 'function') {
+    toggleMobileSidebar(false);
   }
 });
 
@@ -9617,14 +9747,22 @@ window.startDigitalClock = startDigitalClock;
 function toggleMobileSidebar(isOpen) {
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebar-overlay');
-  if (!sidebar || !overlay) return;
+  if (!sidebar) return;
+
+  if (isOpen === undefined) {
+    isOpen = !sidebar.classList.contains('open');
+  }
 
   if (isOpen) {
     sidebar.classList.add('open');
-    overlay.classList.add('show');
+    sidebar.classList.remove('sidebar-closed');
+    document.body.classList.remove('sidebar-is-collapsed');
+    if (overlay) overlay.classList.add('show');
   } else {
     sidebar.classList.remove('open');
-    overlay.classList.remove('show');
+    sidebar.classList.add('sidebar-closed');
+    document.body.classList.add('sidebar-is-collapsed');
+    if (overlay) overlay.classList.remove('show');
   }
 }
 window.toggleMobileSidebar = toggleMobileSidebar;

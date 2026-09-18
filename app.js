@@ -107,6 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start glowing digital clock
   startDigitalClock();
 
+  // Initialize unified Arabic date pickers (dd/mm/yyyy)
+  if (typeof initAllDatePickers === 'function') {
+    initAllDatePickers();
+  }
+
   // 📱 Telegram Mini App Setup (Auto-expand to Large Window on PC ONLY)
   if (window.Telegram?.WebApp) {
     const twa = window.Telegram.WebApp;
@@ -3572,6 +3577,13 @@ function openModal(modalId) {
   modalEl.style.setProperty('opacity', '1', 'important');
   modalEl.style.setProperty('visibility', 'visible', 'important');
   modalEl.style.setProperty('pointer-events', 'auto', 'important');
+
+  // Initialize Flatpickr date pickers inside this modal
+  if (typeof initAllDatePickers === 'function') {
+    setTimeout(() => {
+      initAllDatePickers(modalEl);
+    }, 40);
+  }
 }
 
 function closeModal(modalId) {
@@ -9343,6 +9355,15 @@ function updateDesktopModeUI(isDesktop) {
     if (topBtn) topBtn.title = 'تصغير النافذة والتبديل لوضع الموبايل';
     if (sideText) sideText.textContent = '📱 تصغير لوضع الموبايل';
     if (sideIcon) sideIcon.textContent = '📱';
+
+    // 🖥️ On Desktop mode: Sidebar is ALWAYS permanently docked and visible
+    document.body.classList.remove('sidebar-is-collapsed');
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+      sidebar.classList.remove('sidebar-closed', 'open');
+    }
+    const overlay = document.getElementById('sidebar-overlay');
+    if (overlay) overlay.classList.remove('show');
   } else {
     if (btnText) btnText.textContent = 'نسخة الكمبيوتر';
     if (btnIcon) btnIcon.textContent = '💻';
@@ -9496,23 +9517,38 @@ function resetDisplayMode() {
 }
 window.resetDisplayMode = resetDisplayMode;
 
-// 🛡️ Prevent Pull-to-Dismiss Gesture & Window Overscroll on Mobile (Exact رحلة عبدالله Tactic)
+// 🛡️ Prevent Pull-to-Dismiss Gesture & Window Overscroll on Mobile (without blocking inputs, selects, or taps!)
 let touchStartY = 0;
+let touchStartX = 0;
 document.addEventListener('touchstart', (e) => {
   if (e.touches && e.touches.length === 1) {
     touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
   }
 }, { passive: true });
 
 document.addEventListener('touchmove', (e) => {
+  // CRITICAL: NEVER block interactive form controls, dropdowns, inputs, flatpickr, or buttons!
+  if (e.target && e.target.closest && e.target.closest('input, select, textarea, button, a, label, option, .form-control, .flatpickr-calendar, .flatpickr-input, .badge, [role="button"], [contenteditable]')) {
+    return;
+  }
+
+  // Inside modals, do not prevent touchmove on user interactions
+  if (e.target && e.target.closest && e.target.closest('.modal-content, .modal-body, .autocomplete-dropdown')) {
+    return;
+  }
+
   if (!e.touches || e.touches.length !== 1) return;
   const touchY = e.touches[0].clientY;
   const touchDiff = touchY - touchStartY;
   
-  // When swiping DOWN at the very top of scroll, prevent dragging down the mini app
-  if (touchDiff > 0) {
+  // Only handle meaningful vertical downward drags (> 15px), never micro-tremors from tapping
+  if (touchDiff > 15) {
+    const touchDiffX = Math.abs(e.touches[0].clientX - touchStartX);
+    if (touchDiffX > touchDiff) return; // Horizontal swipe, allow
+
     const scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    const activeScrollable = e.target.closest('.main-content, .card-body, .modal-content, .tab-content, .sidebar');
+    const activeScrollable = e.target.closest && e.target.closest('.main-content, .card-body, .tab-content, .sidebar');
     const containerScrollTop = activeScrollable ? activeScrollable.scrollTop : 0;
     
     if (scrollY <= 0 && containerScrollTop <= 0) {
@@ -9605,9 +9641,20 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
   }
 
-  // Ensure mobile drawer is closed on initial launch
-  if (typeof toggleMobileSidebar === 'function') {
+  // On PC / desktop mode, sidebar is always open and docked.
+  // On pure mobile mode, ensure mobile drawer starts closed.
+  const isPCEnvironment = !isMobileDevice && (window.innerWidth >= 851 || document.body.classList.contains('force-desktop-mode'));
+  if (isPCEnvironment) {
+    document.body.classList.remove('sidebar-is-collapsed');
+    const sb = document.querySelector('.sidebar');
+    if (sb) sb.classList.remove('sidebar-closed', 'open');
+  } else if (typeof toggleMobileSidebar === 'function') {
     toggleMobileSidebar(false);
+  }
+
+  // Initialize all date pickers with Arabic format (dd/mm/yyyy)
+  if (typeof initAllDatePickers === 'function') {
+    initAllDatePickers();
   }
 });
 
@@ -9933,9 +9980,18 @@ function startDigitalClock() {
 window.startDigitalClock = startDigitalClock;
 
 function toggleMobileSidebar(isOpen) {
+  const isDesktop = document.body.classList.contains('force-desktop-mode') || (window.innerWidth > 850 && !(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)));
   const sidebar = document.querySelector('.sidebar');
   const overlay = document.getElementById('sidebar-overlay');
   if (!sidebar) return;
+
+  // 🖥️ On PC / desktop version, sidebar is permanently docked and never hidden
+  if (isDesktop) {
+    sidebar.classList.remove('sidebar-closed', 'open');
+    document.body.classList.remove('sidebar-is-collapsed');
+    if (overlay) overlay.classList.remove('show');
+    return;
+  }
 
   if (isOpen === undefined) {
     isOpen = !sidebar.classList.contains('open');
@@ -9954,6 +10010,104 @@ function toggleMobileSidebar(isOpen) {
   }
 }
 window.toggleMobileSidebar = toggleMobileSidebar;
+
+// --- 📅 UNIFIED ARABIC DATE PICKER (DD/MM/YYYY) ---
+function initAllDatePickers(rootContainer = document) {
+  if (typeof flatpickr === 'undefined') {
+    setTimeout(() => initAllDatePickers(rootContainer), 250);
+    return;
+  }
+
+  const container = rootContainer && rootContainer.querySelectorAll ? rootContainer : document;
+  const dateInputs = container.querySelectorAll('input[type="date"], input.flatpickr-custom');
+  dateInputs.forEach(input => {
+    if (input._flatpickr) return;
+
+    const initialVal = input.value || input.getAttribute('value') || '';
+
+    // Initialize Flatpickr with Arabic locale and Day/Month/Year display format
+    try {
+      flatpickr(input, {
+        locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.ar) ? flatpickr.l10ns.ar : 'ar',
+        dateFormat: 'Y-m-d', // Standard ISO internal value for database/queries
+        altInput: true,
+        altFormat: 'd/m/Y', // User sees DD/MM/YYYY (Day before Month)
+        altInputClass: (input.className || 'form-control') + ' flatpickr-custom-alt',
+        disableMobile: true, // Prevents mobile from falling back to native mm/dd/yyyy
+        allowInput: true,
+        defaultDate: initialVal || null,
+        onChange: function(selectedDates, dateStr) {
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      });
+
+      // Hook .value setter so setting input.value = 'YYYY-MM-DD' programmatically updates the altInput display!
+      if (!input._fpValuePatched) {
+        input._fpValuePatched = true;
+        const originalValueDesc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+        if (originalValueDesc) {
+          Object.defineProperty(input, 'value', {
+            get() {
+              return originalValueDesc.get.call(this);
+            },
+            set(newVal) {
+              originalValueDesc.set.call(this, newVal);
+              if (this._flatpickr) {
+                if (newVal) {
+                  this._flatpickr.setDate(newVal, false);
+                } else {
+                  this._flatpickr.clear();
+                }
+              }
+            },
+            configurable: true
+          });
+        }
+      }
+
+      if (input._flatpickr && input._flatpickr.altInput) {
+        input._flatpickr.altInput.placeholder = 'يوم / شهر / سنة';
+        input._flatpickr.altInput.style.touchAction = 'manipulation';
+      }
+    } catch (err) {
+      console.warn('Flatpickr init notice for', input.id, err);
+    }
+  });
+}
+window.initAllDatePickers = initAllDatePickers;
+
+// Auto sync Flatpickr on form reset
+document.addEventListener('reset', (e) => {
+  setTimeout(() => {
+    if (e.target && e.target.querySelectorAll) {
+      e.target.querySelectorAll('input').forEach(inp => {
+        if (inp._flatpickr) inp._flatpickr.clear();
+      });
+    }
+  }, 10);
+});
+
+// Helper for when user taps disabled capacity select in dispatch modal
+function checkDispatchCapacityClick(e) {
+  const capSelect = document.getElementById('dispatch-picker-capacity');
+  const brandSelect = document.getElementById('dispatch-picker-brand');
+  if (capSelect && capSelect.disabled) {
+    if (!brandSelect || !brandSelect.value) {
+      if (typeof showToast === 'function') {
+        showToast('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة بالمخزن', 'warning');
+      } else {
+        alert('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة بالمخزن');
+      }
+      if (brandSelect) {
+        brandSelect.focus();
+        brandSelect.style.borderColor = '#0ea5e9';
+        setTimeout(() => { brandSelect.style.borderColor = ''; }, 1500);
+      }
+    }
+  }
+}
+window.checkDispatchCapacityClick = checkDispatchCapacityClick;
 
 function openFullscreenImage(src) {
   const modal = document.getElementById('fullscreen-image-modal');

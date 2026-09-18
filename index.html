@@ -43,8 +43,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <!-- Boxicons CDN for modern premium icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- Flatpickr Date Picker (dd/mm/yyyy Egyptian format) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.32.0">
+  <link rel="stylesheet" href="style.css?v=2.33.0">
   <!-- Telegram WebApp SDK for Native Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
@@ -2018,7 +2021,7 @@
               </div>
 
               <!-- Capacity Selection -->
-              <div class="form-group" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;" onclick="checkDispatchCapacityClick(event)">
                 <label style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">القدرة:</label>
                 <select id="dispatch-picker-capacity" class="form-control" onchange="onDispatchPickerCapacityChange()" style="font-size: 0.85rem;" disabled>
                   <option value="">-- اختر القدرة --</option>
@@ -3219,8 +3222,11 @@
   <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
 
   <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
+  <!-- Flatpickr Core & Arabic Locale -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
   <!-- JS Controller -->
   <script src="config.js"></script>
-  <script src="app.js?v=2.74.0"></script>
+  <script src="app.js?v=2.75.0"></script>
 </body>
 </html>

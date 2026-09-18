@@ -1624,5 +1624,20 @@ span.flatpickr-weekday {
   padding-left: 36px !important;
 }
 
+/* Ensure all inputs and selects inside modals are instantly clickable & focusable on PC and mobile */
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.modal-content button {
+  position: relative !important;
+  z-index: 2 !important;
+  pointer-events: auto !important;
+}
 
+select.form-control {
+  cursor: pointer !important;
+}
 
+.modal-content {
+  pointer-events: auto !important;
+}

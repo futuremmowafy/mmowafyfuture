@@ -3578,6 +3578,11 @@ function openModal(modalId) {
   modalEl.style.setProperty('visibility', 'visible', 'important');
   modalEl.style.setProperty('pointer-events', 'auto', 'important');
 
+  // Focus the window & modal for Telegram Desktop WebView on PC
+  try {
+    window.focus();
+  } catch (e) {}
+
   // Initialize Flatpickr date pickers inside this modal
   if (typeof initAllDatePickers === 'function') {
     setTimeout(() => {
@@ -6205,8 +6210,8 @@ function populateDispatchPickerBrands() {
   });
 
   if (capSelect) {
-    capSelect.innerHTML = '<option value="">-- اختر القدرة --</option>';
-    capSelect.disabled = true;
+    capSelect.innerHTML = '<option value="">-- اختر نوع وماركة الجهاز أولاً --</option>';
+    capSelect.disabled = false;
   }
   if (detailsDiv) {
     detailsDiv.classList.add('hidden');
@@ -6223,8 +6228,8 @@ function onDispatchPickerBrandChange() {
 
   const selectedBrand = brandSelect.value;
   if (!selectedBrand) {
-    capSelect.innerHTML = '<option value="">-- اختر القدرة --</option>';
-    capSelect.disabled = true;
+    capSelect.innerHTML = '<option value="">-- اختر نوع وماركة الجهاز أولاً --</option>';
+    capSelect.disabled = false;
     if (detailsDiv) detailsDiv.classList.add('hidden');
     return;
   }
@@ -6263,7 +6268,19 @@ function onDispatchPickerCapacityChange() {
   const selectedBrand = brandSelect.value;
   const selectedCap = capSelect.value;
 
-  if (!selectedBrand || !selectedCap) {
+  if (!selectedBrand) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة', 'warning');
+    }
+    brandSelect.focus();
+    brandSelect.style.borderColor = '#0ea5e9';
+    setTimeout(() => { brandSelect.style.borderColor = ''; }, 1500);
+    capSelect.value = '';
+    detailsDiv.classList.add('hidden');
+    return;
+  }
+
+  if (!selectedCap) {
     detailsDiv.classList.add('hidden');
     return;
   }
@@ -9401,7 +9418,7 @@ function toggleDesktopMode() {
     document.body.classList.add('force-desktop-mode');
     localStorage.setItem('force_desktop_mode', 'true');
     updateDesktopModeUI(true);
-    if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
     
     // ⛶ Expand / Fullscreen in Telegram Desktop
     try {
@@ -9608,7 +9625,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.classList.add('force-desktop-mode');
     updateDesktopModeUI(true);
     const viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (viewportMeta) viewportMeta.setAttribute('content', 'width=1280, initial-scale=0.3, maximum-scale=2.0, user-scalable=yes');
+    if (viewportMeta) viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes');
   } else {
     updateDesktopModeUI(false);
   }
@@ -10088,22 +10105,19 @@ document.addEventListener('reset', (e) => {
   }, 10);
 });
 
-// Helper for when user taps disabled capacity select in dispatch modal
+// Helper for when user taps or clicks capacity select in dispatch modal before brand is chosen
 function checkDispatchCapacityClick(e) {
-  const capSelect = document.getElementById('dispatch-picker-capacity');
   const brandSelect = document.getElementById('dispatch-picker-brand');
-  if (capSelect && capSelect.disabled) {
-    if (!brandSelect || !brandSelect.value) {
-      if (typeof showToast === 'function') {
-        showToast('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة بالمخزن', 'warning');
-      } else {
-        alert('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة بالمخزن');
-      }
-      if (brandSelect) {
-        brandSelect.focus();
-        brandSelect.style.borderColor = '#0ea5e9';
-        setTimeout(() => { brandSelect.style.borderColor = ''; }, 1500);
-      }
+  if (!brandSelect || !brandSelect.value) {
+    if (typeof showToast === 'function') {
+      showToast('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة بالمخزن', 'warning');
+    } else {
+      alert('⚠️ يرجى اختيار نوع وماركة الجهاز أولاً لعرض القدرات المتاحة بالمخزن');
+    }
+    if (brandSelect) {
+      brandSelect.focus();
+      brandSelect.style.borderColor = '#0ea5e9';
+      setTimeout(() => { brandSelect.style.borderColor = ''; }, 1500);
     }
   }
 }

@@ -7,6 +7,10 @@
   <!-- Global JS Error Visualizer for Debugging -->
   <script>
     window.onerror = function(message, source, lineno, colno, error) {
+      if (message === 'Script error.' && (!source || lineno === 0)) {
+        console.warn('Ignored uninformative cross-origin script error:', message);
+        return true;
+      }
       setTimeout(function() {
         var errBox = document.getElementById('debug-error-box');
         if (!errBox) {
@@ -29,9 +33,11 @@
           errBox.style.border = '2px solid #ef4444';
           document.body.appendChild(errBox);
         }
-        errBox.innerHTML = '<h3>⚠️ JavaScript Error Detected:</h3>' +
+        var srcName = source ? source.split('/').pop() : 'inline/external';
+        errBox.innerHTML = '<button onclick="this.parentElement.remove()" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;">&times;</button>' +
+                           '<h3>⚠️ JavaScript Error Detected:</h3>' +
                            '<p><strong>Message:</strong> ' + message + '</p>' +
-                           '<p><strong>Source:</strong> ' + source.split('/').pop() + ' (Line ' + lineno + ', Col ' + colno + ')</p>' +
+                           '<p><strong>Source:</strong> ' + srcName + ' (Line ' + lineno + ', Col ' + colno + ')</p>' +
                            '<p style="margin-top:10px; font-size:12px; color:#fca5a5;">يرجى تصوير هذه الشاشة وإرسالها لي لحل المشكلة فوراً.</p>';
       }, 100);
       return false;
@@ -43,11 +49,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <!-- Boxicons CDN for modern premium icons -->
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <!-- Flatpickr Date Picker (dd/mm/yyyy Egyptian format) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+  <!-- Flatpickr Date Picker (Local files - zero CDN dependency) -->
+  <link rel="stylesheet" href="flatpickr.min.css">
   <!-- CSS Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=2.34.0">
+  <link rel="stylesheet" href="style.css?v=2.35.0">
   <!-- Telegram WebApp SDK for Native Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
@@ -3222,11 +3227,11 @@
   <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
 
   <input type="file" id="cashflow-inline-file-input" style="display:none;" accept="image/*" onchange="handleInlineFileSelection(event)">
-  <!-- Flatpickr Core & Arabic Locale -->
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+  <!-- Flatpickr Core & Arabic Locale (Local files) -->
+  <script src="flatpickr.min.js"></script>
+  <script src="flatpickr.ar.js"></script>
   <!-- JS Controller -->
   <script src="config.js"></script>
-  <script src="app.js?v=2.76.0"></script>
+  <script src="app.js?v=2.77.0"></script>
 </body>
 </html>

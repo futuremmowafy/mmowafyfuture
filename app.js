@@ -107,11 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Start glowing digital clock
   startDigitalClock();
 
-  // Initialize unified Arabic date pickers (dd/mm/yyyy)
-  if (typeof initAllDatePickers === 'function') {
-    initAllDatePickers();
-  }
-
   // 📱 Telegram Mini App Setup (Auto-expand to Large Window on PC ONLY)
   if (window.Telegram?.WebApp) {
     const twa = window.Telegram.WebApp;
@@ -396,22 +391,25 @@ async function initApp() {
   // Refresh all cache
   await refreshAllData();
 
-  // Initialize attendance date filter to local today
-  const attDateInput = document.getElementById('attendance-date-filter');
-  if (attDateInput && !attDateInput.value) {
-    const d = new Date();
-    const offset = d.getTimezoneOffset();
-    const localDate = new Date(d.getTime() - (offset * 60 * 1000));
-    attDateInput.value = localDate.toISOString().split('T')[0];
-  }
+  // Initialize attendance & log date filters safely without blocking initial render
+  try {
+    const attDateInput = document.getElementById('attendance-date-filter');
+    if (attDateInput && !attDateInput.value) {
+      const d = new Date();
+      const offset = d.getTimezoneOffset();
+      const localDate = new Date(d.getTime() - (offset * 60 * 1000));
+      attDateInput.value = localDate.toISOString().split('T')[0];
+    }
 
-  // Transaction & activity logs default to ALL DAYS (empty date filter)
-  const dateInput = document.getElementById('cashflow-date-filter');
-  if (dateInput) dateInput.value = '';
-  const actDateInput = document.getElementById('activities-date-filter');
-  if (actDateInput) actDateInput.value = '';
-  const invLogDateInput = document.getElementById('inventory-log-date-filter');
-  if (invLogDateInput) invLogDateInput.value = '';
+    const dateInput = document.getElementById('cashflow-date-filter');
+    if (dateInput) dateInput.value = '';
+    const actDateInput = document.getElementById('activities-date-filter');
+    if (actDateInput) actDateInput.value = '';
+    const invLogDateInput = document.getElementById('inventory-log-date-filter');
+    if (invLogDateInput) invLogDateInput.value = '';
+  } catch (dateErr) {
+    console.warn('Date filter init notice:', dateErr);
+  }
 
   // Load the current active tab (from localStorage if exists, fallback to active menu item)
   const savedTab = localStorage.getItem('activeTab');
@@ -427,7 +425,15 @@ async function initApp() {
     }
   });
 
+  // 🚀 Render initial active tab immediately so data appears without any delay!
   switchTab(activeTab);
+
+  // Initialize unified Arabic date pickers (dd/mm/yyyy) safely after tab is rendered
+  if (typeof initAllDatePickers === 'function') {
+    setTimeout(() => {
+      initAllDatePickers();
+    }, 120);
+  }
 }
 
 async function refreshAllData() {
@@ -10031,7 +10037,6 @@ window.toggleMobileSidebar = toggleMobileSidebar;
 // --- 📅 UNIFIED ARABIC DATE PICKER (DD/MM/YYYY) ---
 function initAllDatePickers(rootContainer = document) {
   if (typeof flatpickr === 'undefined') {
-    setTimeout(() => initAllDatePickers(rootContainer), 250);
     return;
   }
 
@@ -10055,26 +10060,33 @@ function initAllDatePickers(rootContainer = document) {
         defaultDate: initialVal || null,
         onChange: function(selectedDates, dateStr) {
           input.dispatchEvent(new Event('change', { bubbles: true }));
-          input.dispatchEvent(new Event('input', { bubbles: true }));
         }
       });
 
-      // Hook .value setter so setting input.value = 'YYYY-MM-DD' programmatically updates the altInput display!
+      // Hook .value setter with strict re-entrancy guard to eliminate ANY infinite recursion!
       if (!input._fpValuePatched) {
         input._fpValuePatched = true;
         const originalValueDesc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
         if (originalValueDesc) {
+          let isSyncing = false;
           Object.defineProperty(input, 'value', {
             get() {
               return originalValueDesc.get.call(this);
             },
             set(newVal) {
               originalValueDesc.set.call(this, newVal);
-              if (this._flatpickr) {
-                if (newVal) {
-                  this._flatpickr.setDate(newVal, false);
-                } else {
-                  this._flatpickr.clear();
+              if (this._flatpickr && !isSyncing) {
+                isSyncing = true;
+                try {
+                  if (newVal) {
+                    this._flatpickr.setDate(newVal, false);
+                  } else {
+                    this._flatpickr.clear();
+                  }
+                } catch (e) {
+                  console.warn('Flatpickr sync warning:', e);
+                } finally {
+                  isSyncing = false;
                 }
               }
             },

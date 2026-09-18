@@ -10044,6 +10044,17 @@ function parseSmartArabicDate(dateStr) {
   let s = String(dateStr).replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).trim();
   if (!s) return null;
 
+  // Words shortcuts (اليوم / امس)
+  if (s === 'اليوم' || s.toLowerCase() === 'today') {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0);
+  }
+  if (s === 'امس' || s === 'أمس' || s.toLowerCase() === 'yesterday') {
+    const yest = new Date();
+    yest.setDate(yest.getDate() - 1);
+    return new Date(yest.getFullYear(), yest.getMonth(), yest.getDate(), 12, 0, 0);
+  }
+
   const currentYear = new Date().getFullYear();
 
   // Pattern 1: Delimited with /, -, ., or spaces (e.g. 19/9/2026, 19-09-2026, 19.9.26, 2026-09-19)
@@ -10154,57 +10165,15 @@ function initAllDatePickers(rootContainer = document) {
         altInputClass: (input.className || 'form-control') + ' flatpickr-custom-alt',
         disableMobile: true, // Prevents mobile from falling back to native mm/dd/yyyy
         allowInput: true,
+        clickOpens: false, // 🚫 Prevent popup calendar from opening at all as requested by user
+        onOpen: function(selectedDates, dateStr, instance) {
+          instance.close(); // Immediate auto-close guard
+        },
         defaultDate: initialVal || null,
         parseDate: function(dateStr, format) {
           const smart = parseSmartArabicDate(dateStr);
           if (smart) return smart;
           return flatpickr.parseDate(dateStr, format);
-        },
-        onReady: function(selectedDates, dateStr, instance) {
-          if (instance.calendarContainer && !instance.calendarContainer.querySelector('.flatpickr-custom-footer')) {
-            const footer = document.createElement('div');
-            footer.className = 'flatpickr-custom-footer';
-
-            const todayBtn = document.createElement('button');
-            todayBtn.type = 'button';
-            todayBtn.className = 'btn-fp-footer fp-btn-today';
-            todayBtn.innerHTML = '📅 اليوم';
-            todayBtn.title = 'تحديد تاريخ اليوم تلقائياً';
-            todayBtn.onclick = function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              instance.setDate(new Date(), true);
-              instance.close();
-            };
-
-            const clearBtn = document.createElement('button');
-            clearBtn.type = 'button';
-            clearBtn.className = 'btn-fp-footer fp-btn-clear';
-            clearBtn.innerHTML = '✕ مسح';
-            clearBtn.title = 'مسح التاريخ المحدد';
-            clearBtn.onclick = function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              instance.clear();
-              instance.close();
-            };
-
-            const closeBtn = document.createElement('button');
-            closeBtn.type = 'button';
-            closeBtn.className = 'btn-fp-footer fp-btn-close';
-            closeBtn.innerHTML = '✓ تم';
-            closeBtn.title = 'تأكيد وإغلاق';
-            closeBtn.onclick = function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              instance.close();
-            };
-
-            footer.appendChild(todayBtn);
-            footer.appendChild(clearBtn);
-            footer.appendChild(closeBtn);
-            instance.calendarContainer.appendChild(footer);
-          }
         },
         onChange: function(selectedDates, dateStr) {
           input.dispatchEvent(new Event('change', { bubbles: true }));

@@ -10034,6 +10034,103 @@ function toggleMobileSidebar(isOpen) {
 }
 window.toggleMobileSidebar = toggleMobileSidebar;
 
+// --- 📅 SMART ARABIC DATE PARSER ---
+function parseSmartArabicDate(dateStr) {
+  if (!dateStr) return null;
+  if (dateStr instanceof Date) return dateStr;
+  if (typeof dateStr === 'number') return new Date(dateStr);
+
+  // Convert Arabic-indic digits (٠-٩) to standard English digits (0-9)
+  let s = String(dateStr).replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); }).trim();
+  if (!s) return null;
+
+  const currentYear = new Date().getFullYear();
+
+  // Pattern 1: Delimited with /, -, ., or spaces (e.g. 19/9/2026, 19-09-2026, 19.9.26, 2026-09-19)
+  const parts = s.split(/[\/\-\.\s]+/);
+  if (parts.length === 3) {
+    let p0 = parseInt(parts[0], 10);
+    let p1 = parseInt(parts[1], 10);
+    let p2 = parseInt(parts[2], 10);
+
+    let day, month, year;
+    if (p0 > 1000) {
+      year = p0;
+      month = p1;
+      day = p2;
+    } else {
+      day = p0;
+      month = p1;
+      year = p2;
+      if (year < 100) year += 2000;
+    }
+
+    if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const maxDays = new Date(year, month, 0).getDate();
+      if (day <= maxDays) return new Date(year, month - 1, day, 12, 0, 0);
+    }
+  } else if (parts.length === 2) {
+    let day = parseInt(parts[0], 10);
+    let month = parseInt(parts[1], 10);
+    let year = currentYear;
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const maxDays = new Date(year, month, 0).getDate();
+      if (day <= maxDays) return new Date(year, month - 1, day, 12, 0, 0);
+    }
+  }
+
+  // Pattern 2: Continuous digits (no delimiters)
+  const digits = s.replace(/\D/g, '');
+  if (digits.length === 8) {
+    const day = parseInt(digits.slice(0, 2), 10);
+    const month = parseInt(digits.slice(2, 4), 10);
+    const year = parseInt(digits.slice(4, 8), 10);
+    if (year >= 1900 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const maxDays = new Date(year, month, 0).getDate();
+      if (day <= maxDays) return new Date(year, month - 1, day, 12, 0, 0);
+    }
+  }
+
+  if (digits.length === 7) {
+    const day1 = parseInt(digits.slice(0, 2), 10);
+    const month1 = parseInt(digits.slice(2, 3), 10);
+    const year1 = parseInt(digits.slice(3, 7), 10);
+
+    const day2 = parseInt(digits.slice(0, 1), 10);
+    const month2 = parseInt(digits.slice(1, 3), 10);
+    const year2 = parseInt(digits.slice(3, 7), 10);
+
+    const valid1 = (year1 >= 1900 && year1 <= 2100 && month1 >= 1 && month1 <= 12 && day1 >= 1 && day1 <= (new Date(year1, month1, 0).getDate()));
+    const valid2 = (year2 >= 1900 && year2 <= 2100 && month2 >= 1 && month2 <= 12 && day2 >= 1 && day2 <= (new Date(year2, month2, 0).getDate()));
+
+    if (valid1) return new Date(year1, month1 - 1, day1, 12, 0, 0);
+    if (valid2) return new Date(year2, month2 - 1, day2, 12, 0, 0);
+  }
+
+  if (digits.length === 6) {
+    const day = parseInt(digits.slice(0, 2), 10);
+    const month = parseInt(digits.slice(2, 4), 10);
+    let year = parseInt(digits.slice(4, 6), 10);
+    if (year < 100) year += 2000;
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const maxDays = new Date(year, month, 0).getDate();
+      if (day <= maxDays) return new Date(year, month - 1, day, 12, 0, 0);
+    }
+  }
+
+  if (digits.length === 4) {
+    const day = parseInt(digits.slice(0, 2), 10);
+    const month = parseInt(digits.slice(2, 4), 10);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      const maxDays = new Date(currentYear, month, 0).getDate();
+      if (day <= maxDays) return new Date(currentYear, month - 1, day, 12, 0, 0);
+    }
+  }
+
+  return null;
+}
+window.parseSmartArabicDate = parseSmartArabicDate;
+
 // --- 📅 UNIFIED ARABIC DATE PICKER (DD/MM/YYYY) ---
 function initAllDatePickers(rootContainer = document) {
   if (typeof flatpickr === 'undefined') {
@@ -10047,7 +10144,7 @@ function initAllDatePickers(rootContainer = document) {
 
     const initialVal = input.value || input.getAttribute('value') || '';
 
-    // Initialize Flatpickr with Arabic locale and Day/Month/Year display format
+    // Initialize Flatpickr with Arabic locale, smart parser, and Day/Month/Year format
     try {
       flatpickr(input, {
         locale: (typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.ar) ? flatpickr.l10ns.ar : 'ar',
@@ -10058,6 +10155,57 @@ function initAllDatePickers(rootContainer = document) {
         disableMobile: true, // Prevents mobile from falling back to native mm/dd/yyyy
         allowInput: true,
         defaultDate: initialVal || null,
+        parseDate: function(dateStr, format) {
+          const smart = parseSmartArabicDate(dateStr);
+          if (smart) return smart;
+          return flatpickr.parseDate(dateStr, format);
+        },
+        onReady: function(selectedDates, dateStr, instance) {
+          if (instance.calendarContainer && !instance.calendarContainer.querySelector('.flatpickr-custom-footer')) {
+            const footer = document.createElement('div');
+            footer.className = 'flatpickr-custom-footer';
+
+            const todayBtn = document.createElement('button');
+            todayBtn.type = 'button';
+            todayBtn.className = 'btn-fp-footer fp-btn-today';
+            todayBtn.innerHTML = '📅 اليوم';
+            todayBtn.title = 'تحديد تاريخ اليوم تلقائياً';
+            todayBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              instance.setDate(new Date(), true);
+              instance.close();
+            };
+
+            const clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'btn-fp-footer fp-btn-clear';
+            clearBtn.innerHTML = '✕ مسح';
+            clearBtn.title = 'مسح التاريخ المحدد';
+            clearBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              instance.clear();
+              instance.close();
+            };
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'btn-fp-footer fp-btn-close';
+            closeBtn.innerHTML = '✓ تم';
+            closeBtn.title = 'تأكيد وإغلاق';
+            closeBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              instance.close();
+            };
+
+            footer.appendChild(todayBtn);
+            footer.appendChild(clearBtn);
+            footer.appendChild(closeBtn);
+            instance.calendarContainer.appendChild(footer);
+          }
+        },
         onChange: function(selectedDates, dateStr) {
           input.dispatchEvent(new Event('change', { bubbles: true }));
         }
@@ -10095,9 +10243,53 @@ function initAllDatePickers(rootContainer = document) {
         }
       }
 
+      // Configure altInput styling, placeholder, live typing and blur formatting
       if (input._flatpickr && input._flatpickr.altInput) {
-        input._flatpickr.altInput.placeholder = 'يوم / شهر / سنة';
-        input._flatpickr.altInput.style.touchAction = 'manipulation';
+        const altInput = input._flatpickr.altInput;
+        altInput.placeholder = 'يوم / شهر / سنة';
+        altInput.style.touchAction = 'manipulation';
+
+        if (!altInput._typingSetup) {
+          altInput._typingSetup = true;
+
+          // Convert Arabic numerals live as user types
+          altInput.addEventListener('input', function(e) {
+            if (e.inputType && e.inputType.startsWith('delete')) return;
+            const curVal = altInput.value;
+            const normalized = curVal.replace(/[٠-٩]/g, function(d) { return '٠١٢٣٤٥٦٧٨٩'.indexOf(d); });
+            if (normalized !== curVal) {
+              altInput.value = normalized;
+            }
+          });
+
+          // When user finishes typing (blur or Enter), format to clean dd/mm/yyyy
+          function commitDate() {
+            const raw = altInput.value.trim();
+            if (!raw) {
+              input._flatpickr.clear();
+              return;
+            }
+            const parsed = parseSmartArabicDate(raw);
+            if (parsed) {
+              input._flatpickr.setDate(parsed, true);
+            } else {
+              if (input._flatpickr.selectedDates.length > 0) {
+                input._flatpickr.setDate(input._flatpickr.selectedDates[0], true);
+              } else {
+                input._flatpickr.clear();
+              }
+            }
+          }
+
+          altInput.addEventListener('blur', commitDate);
+          altInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commitDate();
+              input._flatpickr.close();
+            }
+          });
+        }
       }
     } catch (err) {
       console.warn('Flatpickr init notice for', input.id, err);
